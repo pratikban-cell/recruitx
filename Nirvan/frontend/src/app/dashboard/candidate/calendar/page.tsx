@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase-client";
+import { getCalendarEvents } from "@/lib/api";
 
 const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -40,6 +41,8 @@ export default function CandidateCalendar() {
     const load = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      let allEvents: CalendarEvent[] = [];
 
       const { data: candidate } = await supabase
         .from("candidates")
@@ -92,11 +95,33 @@ export default function CandidateCalendar() {
               meetLink,
             };
           });
-          setEvents(mapped);
-        } else {
-          setEvents([]);
+          allEvents = [...mapped];
         }
       }
+
+      // Fetch Google Calendar events
+      try {
+        const gCal = await getCalendarEvents(user.id);
+        if (gCal && gCal.events && gCal.events.length > 0) {
+          const mappedGoogle = gCal.events.map((evt: any) => {
+            const start = new Date(evt.start);
+            return {
+              day: start.getDate(),
+              month: start.getMonth(),
+              year: start.getFullYear(),
+              title: evt.summary || "Google Calendar Event",
+              time: start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              type: "external",
+              meetLink: evt.hangoutLink || "",
+            };
+          });
+          allEvents = [...allEvents, ...mappedGoogle];
+        }
+      } catch (calErr) {
+        console.error("Failed to load Google Calendar events:", calErr);
+      }
+
+      setEvents(allEvents);
       setLoading(false);
     };
     load();

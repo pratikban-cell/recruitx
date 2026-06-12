@@ -267,6 +267,24 @@ export async function getCalendarStatus(profileId: string) {
   }
 }
 
+export async function getCalendarEvents(
+  profileId: string,
+  timeMin?: string,
+  timeMax?: string,
+) {
+  try {
+    const params = new URLSearchParams();
+    params.append("profile_id", profileId);
+    if (timeMin) params.append("time_min", timeMin);
+    if (timeMax) params.append("time_max", timeMax);
+    const res = await apiFetch(`/api/calendar/events?${params.toString()}`);
+    return safeJson(res, { events: [] });
+  } catch (err) {
+    console.error("Error in getCalendarEvents:", err);
+    return { events: [] };
+  }
+}
+
 export async function disconnectCalendar(profileId: string) {
   try {
     const res = await apiFetch(`/api/calendar/disconnect`, {

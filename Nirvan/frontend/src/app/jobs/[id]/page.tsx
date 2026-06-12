@@ -89,9 +89,9 @@ export default function JobDetail() {
       const res = await initiateNegotiation(recId, candidateId, job.id);
       const negId = res?.negotiation_id;
 
-      // 2. Send the message to the candidate's agent to kickstart local context
+      // 2. Send the message to the candidate's agent to kickstart local context (non-blocking)
       const msg = `I'm interested in the ${job?.title} role at ${job?.company}. My profile is ready — let's negotiate.`;
-      await candidateSendMessage(msg);
+      candidateSendMessage(msg).catch((err) => console.error("A2A context initialization failed:", err));
 
       if (negId) {
         router.push(`/negotiations/${negId}`);

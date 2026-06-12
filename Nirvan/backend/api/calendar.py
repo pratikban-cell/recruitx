@@ -287,3 +287,100 @@ async def disconnect_calendar(req: ConnectRequest, user=Depends(get_current_user
     db = get_db()
     db.table("calendar_connections").delete().eq("profile_id", req.profile_id).execute()
     return {"status": "disconnected"}
+
+
+@router.get("/events")
+async def get_calendar_events(
+    profile_id: str,
+    time_min: Optional[str] = None,
+    time_max: Optional[str] = None,
+    user=Depends(get_current_user),
+):
+    """
+    Fetches real Google Calendar events for the connected user.
+    """
+    assert_profile_owner(profile_id, user)
+
+    # Refresh token and get access token
+    access_token = await refresh_access_token(profile_id)
+    if not access_token:
+        return {"events": []}
+
+    if access_token == "mock_access_token":
+        # Mock mode: return some mock calendar events for testing
+        mock_events = [
+            {
+                "summary": "Mock Meeting: Project Intro",
+                "start": (datetime.now(timezone.utc) + timedelta(days=1))
+                .replace(hour=10, minute=0, second=0, microsecond=0)
+                .isoformat(),
+                "end": (datetime.now(timezone.utc) + timedelta(days=1))
+                .replace(hour=11, minute=0, second=0, microsecond=0)
+                .isoformat(),
+                "hangoutLink": "https://meet.google.com/abc-mock-meet",
+            },
+            {
+                "summary": "Mock Task: Review Resume",
+                "start": (datetime.now(timezone.utc) + timedelta(days=2))
+                .replace(hour=14, minute=0, second=0, microsecond=0)
+                .isoformat(),
+                "end": (datetime.now(timezone.utc) + timedelta(days=2))
+                .replace(hour=15, minute=0, second=0, microsecond=0)
+                .isoformat(),
+            },
+        ]
+        return {"events": mock_events}
+
+    try:
+        async with httpx.AsyncClient() as client:
+            params = {
+                "singleEvents": "true",
+                "orderBy": "startTime",
+            }
+            if time_min:
+                params["timeMin"] = time_min
+            if time_max:
+                params["timeMax"] = time_max
+
+            resp = await client.get(
+                "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+                headers={"Authorization": f"Bearer {access_token}"},
+                params=params,
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                items = data.get("items", [])
+
+                # Format to a simpler response
+                formatted = []
+                for item in items:
+                    # Ignore cancelled events
+                    if item.get("status") == "cancelled":
+                        continue
+
+                    start = item.get("start", {})
+                    end = item.get("end", {})
+
+                    # Google Calendar API returns start/end as dateTime or date (for all-day events)
+                    start_dt = start.get("dateTime") or start.get("date")
+                    end_dt = end.get("dateTime") or end.get("date")
+
+                    if not start_dt:
+                        continue
+
+                    formatted.append(
+                        {
+                            "summary": item.get("summary", "No Title"),
+                            "description": item.get("description", ""),
+                            "start": start_dt,
+                            "end": end_dt,
+                            "hangoutLink": item.get("hangoutLink", ""),
+                        }
+                    )
+                return {"events": formatted}
+            else:
+                print(f"Failed to fetch Google Calendar events: {resp.text}")
+                return {"events": [], "error": resp.text}
+    except Exception as e:
+        print(f"Error fetching Google Calendar events: {str(e)}")
+        return {"events": [], "error": str(e)}
