@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { mockRecruiterNegotiations } from "@/lib/mock-data";
 import StatCard from "@/components/dashboard/StatCard";
+import { InteractiveBarChart } from "@/components/ui/Charts";
 
 type Negotiation = {
   id: string;
@@ -227,25 +228,32 @@ export default function RecruiterOverview() {
 
       <div className="grid grid-cols-3 gap-5">
         <div className="col-span-2 rounded-xl border border-card-border bg-white shadow-sm">
-          <div className="border-b border-card-border px-6 py-4">
+          <div className="flex items-center justify-between border-b border-card-border px-6 py-4">
             <h2 className="text-sm font-semibold text-foreground">Weekly Activity</h2>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="flex items-center gap-1.5 font-medium text-slate-500">
+                <span className="h-2 w-2 rounded-full bg-accent" />
+                Matches
+              </span>
+              <span className="flex items-center gap-1.5 font-medium text-slate-500">
+                <span className="h-2 w-2 rounded-full bg-indigo-300" />
+                Interviews
+              </span>
+            </div>
           </div>
           <div className="p-6">
-            <div className="flex items-end gap-2 h-44">
-              {weeklyData.map((d) => (
-                <div key={d.day} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
-                  <div className="flex gap-1 w-full items-end justify-center" style={{ height: "100%" }}>
-                    <div className="w-3 rounded-t-sm bg-accent/70 transition-all" style={{ height: `${(d.matches / maxY) * 100}%` }} />
-                    <div className="w-3 rounded-t-sm bg-accent/30 transition-all" style={{ height: `${(d.interviews / maxY) * 100}%` }} />
-                  </div>
-                  <span className="text-[10px] text-muted mt-1">{d.day}</span>
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-card-border/60">
-              <div className="flex items-center gap-2"><div className="h-2.5 w-2.5 rounded-sm bg-accent/70" /><span className="text-xs text-muted">Matches</span></div>
-              <div className="flex items-center gap-2"><div className="h-2.5 w-2.5 rounded-sm bg-accent/30" /><span className="text-xs text-muted">Interviews</span></div>
-            </div>
+            <InteractiveBarChart
+              data={weeklyData.map((d) => ({
+                label: d.day,
+                value: d.matches,
+                secondary: d.interviews,
+              }))}
+              primaryColor="#266df0"
+              secondaryColor="#a5b4fc"
+              primaryLabel="Matches"
+              secondaryLabel="Interviews"
+              height={180}
+            />
           </div>
         </div>
 

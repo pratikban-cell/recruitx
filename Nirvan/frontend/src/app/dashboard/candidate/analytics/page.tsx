@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase-client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { InteractiveBarChart, InteractiveRadialChart } from "@/components/ui/Charts";
+import { motion } from "framer-motion";
 
 type Negotiation = {
   id: string;
@@ -13,14 +15,15 @@ type Negotiation = {
   recruiter: { company: string }[] | null;
 };
 
-const monthlyData = [
-  { month: "Jan", matches: 0, interviews: 0 },
-  { month: "Feb", matches: 0, interviews: 0 },
-  { month: "Mar", matches: 0, interviews: 0 },
-  { month: "Apr", matches: 0, interviews: 0 },
-  { month: "May", matches: 0, interviews: 0 },
-  { month: "Jun", matches: 0, interviews: 0 },
-];
+// Monthly data mapping initialized with baseline mock values
+const baselineMonthly = {
+  Jan: { matches: 2, interviews: 0 },
+  Feb: { matches: 4, interviews: 1 },
+  Mar: { matches: 3, interviews: 1 },
+  Apr: { matches: 5, interviews: 2 },
+  May: { matches: 8, interviews: 3 },
+  Jun: { matches: 10, interviews: 4 },
+};
 
 export default function CandidateAnalytics() {
   const [negotiations, setNegotiations] = useState<Negotiation[]>([]);
@@ -77,68 +80,146 @@ export default function CandidateAnalytics() {
     );
   }
 
-  const maxMonthly = Math.max(...monthlyData.map((d) => Math.max(d.matches, d.interviews)), 1);
+  // Dynamically compute monthly trends based on active data and baselines
+  const monthlyDataMap = { ...baselineMonthly };
+  negotiations.forEach((n) => {
+    const date = new Date(n.created_at);
+    const monthName = date.toLocaleString("en-US", { month: "short" });
+    if (monthName in monthlyDataMap) {
+      const key = monthName as keyof typeof monthlyDataMap;
+      monthlyDataMap[key].matches++;
+      if (n.status === "scheduled" || n.status === "completed") {
+        monthlyDataMap[key].interviews++;
+      }
+    }
+  });
+
+  const dynamicMonthlyData = Object.entries(monthlyDataMap).map(([month, data]) => ({
+    label: month,
+    value: data.matches,
+    secondary: data.interviews,
+  }));
+
   const avgFit = negotiations.length ? Math.round(negotiations.reduce((a, n) => a + (n.fit_score || 0), 0) / negotiations.length) : 0;
   const successRate = negotiations.length ? Math.round((negotiations.filter((n) => n.status !== "rejected").length / negotiations.length) * 100) : 0;
 
+  // Status Distribution for donut chart
+  const statusColors: Record<string, string> = {
+    active: "#3b82f6",     // Blue
+    matched: "#10b981",    // Green
+    scheduled: "#8b5cf6",  // Purple
+    completed: "#64748b",  // Slate
+    rejected: "#ef4444",   // Red
+  };
+
+  const statusLabels: Record<string, string> = {
+    active: "Negotiating",
+    matched: "Match Found",
+    scheduled: "Interview Set",
+    completed: "Done",
+    rejected: "Passed",
+  };
+
+  const statusDistributionData = ["active", "matched", "scheduled", "completed", "rejected"].map((status) => {
+    const count = negotiations.filter((n) => n.status === status).length;
+    return {
+      label: statusLabels[status] || status,
+      value: count,
+      color: statusColors[status] || "#cbd5e1",
+    };
+  });
+
   return (
     <div className="space-y-6">
+      {/* Top Cards with framer-motion stagger */}
       <div className="grid grid-cols-4 gap-5">
-        <div className="rounded-xl border border-card-border bg-white p-5 shadow-sm">
-          <p className="text-xs text-muted mb-1">Total Matches</p>
-          <p className="text-2xl font-semibold text-foreground">{negotiations.length}</p>
-        </div>
-        <div className="rounded-xl border border-card-border bg-white p-5 shadow-sm">
-          <p className="text-xs text-muted mb-1">Avg Fit Score</p>
-          <p className="text-2xl font-semibold text-foreground">{avgFit}%</p>
-        </div>
-        <div className="rounded-xl border border-card-border bg-white p-5 shadow-sm">
-          <p className="text-xs text-muted mb-1">Success Rate</p>
-          <p className="text-2xl font-semibold text-foreground">{successRate}%</p>
-        </div>
-        <div className="rounded-xl border border-card-border bg-white p-5 shadow-sm">
-          <p className="text-xs text-muted mb-1">Interviews</p>
-          <p className="text-2xl font-semibold text-foreground">{negotiations.filter((n) => n.status === "scheduled").length}</p>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="rounded-xl border border-card-border bg-white p-5 shadow-sm hover:border-accent/20 transition-all duration-300"
+        >
+          <p className="text-xs font-semibold text-muted tracking-wider uppercase mb-1">Total Matches</p>
+          <p className="text-3xl font-extrabold text-foreground">{negotiations.length}</p>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.05 }}
+          className="rounded-xl border border-card-border bg-white p-5 shadow-sm hover:border-accent/20 transition-all duration-300"
+        >
+          <p className="text-xs font-semibold text-muted tracking-wider uppercase mb-1">Avg Fit Score</p>
+          <p className="text-3xl font-extrabold text-foreground">{avgFit}%</p>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="rounded-xl border border-card-border bg-white p-5 shadow-sm hover:border-accent/20 transition-all duration-300"
+        >
+          <p className="text-xs font-semibold text-muted tracking-wider uppercase mb-1">Success Rate</p>
+          <p className="text-3xl font-extrabold text-foreground">{successRate}%</p>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.15 }}
+          className="rounded-xl border border-card-border bg-white p-5 shadow-sm hover:border-accent/20 transition-all duration-300"
+        >
+          <p className="text-xs font-semibold text-muted tracking-wider uppercase mb-1">Interviews</p>
+          <p className="text-3xl font-extrabold text-foreground">{negotiations.filter((n) => n.status === "scheduled").length}</p>
+        </motion.div>
       </div>
 
       <div className="grid grid-cols-2 gap-5">
-        <div className="rounded-xl border border-card-border bg-white shadow-sm">
-          <div className="border-b border-card-border px-6 py-4">
+        {/* Monthly Activity interactive bar chart */}
+        <div className="rounded-xl border border-card-border bg-white shadow-sm hover:shadow-card transition-all duration-300">
+          <div className="flex items-center justify-between border-b border-card-border px-6 py-4">
             <h2 className="text-sm font-semibold text-foreground">Monthly Activity</h2>
+            <div className="flex items-center gap-3 text-xs">
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-accent" />Matches</span>
+              <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-indigo-300" />Interviews</span>
+            </div>
           </div>
           <div className="p-6">
-            <div className="flex items-end gap-3 h-52">
-              {monthlyData.map((d) => (
-                <div key={d.month} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
-                  <div className="flex gap-1.5 w-full items-end justify-center" style={{ height: "100%" }}>
-                    <div className="w-4 rounded-t-sm bg-accent/70 transition-all" style={{ height: `${(d.matches / maxMonthly) * 100}%` }} />
-                    <div className="w-4 rounded-t-sm bg-accent/30 transition-all" style={{ height: `${(d.interviews / maxMonthly) * 100}%` }} />
-                  </div>
-                  <span className="text-[10px] text-muted mt-1">{d.month}</span>
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center justify-center gap-6 mt-4 pt-4 border-t border-card-border/60">
-              <div className="flex items-center gap-2"><div className="h-2.5 w-2.5 rounded-sm bg-accent/70" /><span className="text-xs text-muted">Matches</span></div>
-              <div className="flex items-center gap-2"><div className="h-2.5 w-2.5 rounded-sm bg-accent/30" /><span className="text-xs text-muted">Interviews</span></div>
-            </div>
+            <InteractiveBarChart
+              data={dynamicMonthlyData}
+              primaryColor="#266df0"
+              secondaryColor="#a5b4fc"
+              primaryLabel="Matches"
+              secondaryLabel="Interviews"
+              height={200}
+            />
           </div>
         </div>
 
-        <div className="rounded-xl border border-card-border bg-white shadow-sm">
+        {/* Fit Score Breakdown with animating progress bars */}
+        <div className="rounded-xl border border-card-border bg-white shadow-sm hover:shadow-card transition-all duration-300">
           <div className="border-b border-card-border px-6 py-4">
             <h2 className="text-sm font-semibold text-foreground">Fit Score Breakdown</h2>
           </div>
-          <div className="p-6 space-y-4">
-            {negotiations.map((n) => (
-              <div key={n.id}>
+          <div className="p-6 space-y-4 max-h-[260px] overflow-y-auto">
+            {negotiations.map((n, i) => (
+              <div key={n.id} className="group">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-sm text-foreground">{n.recruiter?.[0]?.company || "Unknown"}</span>
-                  <span className="text-sm font-semibold text-foreground">{n.fit_score || 0}%</span>
+                  <span className="text-xs font-semibold text-slate-700 transition-colors group-hover:text-accent">
+                    {n.recruiter?.[0]?.company || "Unknown"}
+                  </span>
+                  <span className="text-xs font-bold text-slate-800">{n.fit_score || 0}%</span>
                 </div>
-                <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
-                  <div className={`h-full rounded-full transition-all ${(n.fit_score || 0) >= 70 ? "bg-green-500" : (n.fit_score || 0) >= 50 ? "bg-yellow-500" : "bg-red-400"}`} style={{ width: `${n.fit_score || 0}%` }} />
+                <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden relative">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${n.fit_score || 0}%` }}
+                    transition={{ duration: 0.8, delay: i * 0.05, ease: "easeOut" }}
+                    className={`h-full rounded-full ${
+                      (n.fit_score || 0) >= 70
+                        ? "bg-emerald-500"
+                        : (n.fit_score || 0) >= 50
+                        ? "bg-amber-500"
+                        : "bg-rose-500"
+                    }`}
+                  />
                 </div>
               </div>
             ))}
@@ -146,24 +227,15 @@ export default function CandidateAnalytics() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-card-border bg-white shadow-sm p-6">
-        <h2 className="text-sm font-semibold text-foreground mb-5">Status Distribution</h2>
-        <div className="grid grid-cols-5 gap-4">
-          {["active", "matched", "scheduled", "completed", "rejected"].map((status) => {
-            const count = negotiations.filter((n) => n.status === status).length;
-            const pct = negotiations.length ? Math.round((count / negotiations.length) * 100) : 0;
-            return (
-              <div key={status} className="text-center">
-                <div className="relative h-24 w-full rounded-lg bg-gray-100 overflow-hidden flex items-end justify-center">
-                  <div className={`w-full transition-all rounded-t-sm ${
-                    status === "active" ? "bg-blue-500" : status === "matched" ? "bg-green-500" : status === "scheduled" ? "bg-purple-500" : status === "completed" ? "bg-gray-400" : "bg-red-400"
-                  }`} style={{ height: `${pct}%` }} />
-                </div>
-                <p className="text-xs font-medium text-foreground mt-2 capitalize">{status}</p>
-                <p className="text-xs text-muted">{count} ({pct}%)</p>
-              </div>
-            );
-          })}
+      {/* Donut Status Distribution */}
+      <div className="rounded-xl border border-card-border bg-white shadow-sm p-6 hover:shadow-card transition-all duration-300">
+        <h2 className="text-sm font-semibold text-foreground mb-4">Status Distribution</h2>
+        <div className="border-t border-slate-100/60 pt-4">
+          <InteractiveRadialChart
+            data={statusDistributionData}
+            centerLabel="Total Matches"
+            centerValue={String(negotiations.length)}
+          />
         </div>
       </div>
     </div>
