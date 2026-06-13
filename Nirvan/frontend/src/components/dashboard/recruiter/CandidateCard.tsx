@@ -65,6 +65,11 @@ export default function CandidateCard({
         <div className="min-w-0">
           <h3 className="font-bold text-xs.5 text-foreground flex items-center gap-1.5 truncate">
             {card.candidate_name}
+            {card.is_identity_verified && (
+              <span className="rounded-full bg-emerald-50 border border-emerald-200 px-1.5 py-0.25 text-[8px] font-bold text-emerald-600 flex items-center gap-0.5 whitespace-nowrap">
+                🛡️ Verified ✓
+              </span>
+            )}
             {card.is_paused && (
               <span className="flex h-2 w-2 relative">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>

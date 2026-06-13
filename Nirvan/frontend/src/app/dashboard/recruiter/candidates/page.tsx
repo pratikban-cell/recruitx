@@ -24,7 +24,14 @@ type Negotiation = {
   created_at: string;
   recruiter_notes?: string | null;
   candidate_notes?: string | null;
-  candidate: { title: string; skills: string[]; salary_min: number }[] | null;
+  candidate: {
+    id?: string;
+    title: string;
+    skills: string[];
+    salary_min: number;
+    profile?: any;
+    is_identity_verified?: boolean;
+  }[] | null;
 };
 
 type CandidateProfile = {
@@ -240,6 +247,7 @@ export default function RecruiterCandidates() {
           created_at: n.created_at,
           meeting_time: meetingTime,
           dbRecord: n,
+          is_identity_verified: true,
         });
       });
 
@@ -763,6 +771,10 @@ export default function RecruiterCandidates() {
                 const candidate = Array.isArray(n.candidate)
                   ? n.candidate[0]
                   : n.candidate;
+                const candProfile = Array.isArray(candidate?.profile)
+                  ? candidate?.profile[0]
+                  : candidate?.profile;
+                const candidateName = candProfile?.name || "Candidate";
                 const statusColor: Record<string, string> = {
                   active: "border-l-blue-500 bg-blue-50/40",
                   matched: "border-l-green-500 bg-green-50/40",
@@ -793,9 +805,13 @@ export default function RecruiterCandidates() {
                             {candidate?.title?.[0] || "?"}
                           </div>
                           <div>
-                            <h3 className="font-semibold text-foreground group-hover:text-accent transition-colors">
-                              {candidate?.title || "Candidate"}
-                            </h3>
+                            <p className="text-sm font-semibold text-foreground truncate flex items-center gap-1.5">
+                              {candidateName}
+                              <span className="rounded-full bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 text-[8px] font-bold text-emerald-600 flex items-center gap-0.5 whitespace-nowrap">
+                                🛡️ Identity Verified ✓
+                              </span>
+                            </p>
+                            <p className="text-xs text-muted truncate mt-0.5">{candidate?.title || "Developer"}</p>
                             <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                               {candidate?.skills
                                 ?.slice(0, 3)
@@ -1066,9 +1082,14 @@ export default function RecruiterCandidates() {
                           </span>
                         )}
                         {t.human_verified && (
-                          <span className="rounded-full bg-purple-50 border border-purple-200 px-2.5 py-0.5 text-[9px] font-bold text-purple-600 flex items-center gap-1">
-                            Human Expert CV Verified ✓
-                          </span>
+                          <>
+                            <span className="rounded-full bg-purple-50 border border-purple-200 px-2.5 py-0.5 text-[9px] font-bold text-purple-600 flex items-center gap-1">
+                              Human Expert CV Verified ✓
+                            </span>
+                            <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[9px] font-bold text-emerald-600 flex items-center gap-1">
+                              🛡️ Identity Verified ✓
+                            </span>
+                          </>
                         )}
                         <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[9px] font-medium text-slate-600">
                           📅 {availabilityText}

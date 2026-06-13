@@ -12,6 +12,7 @@ const pageTitles: Record<string, string> = {
   "/dashboard/recruiter/analytics": "Analytics",
   "/dashboard/recruiter/settings": "Settings",
   "/dashboard/recruiter/matchmaking": "Matchmaking",
+  "/dashboard/recruiter/verify": "PAN Verification",
 };
 
 export default function RecruiterLayout({ children }: { children: React.ReactNode }) {

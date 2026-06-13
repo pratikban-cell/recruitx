@@ -13,6 +13,7 @@ const pageTitles: Record<string, string> = {
   "/dashboard/candidate/analytics": "Analytics",
   "/dashboard/candidate/settings": "Settings",
   "/dashboard/candidate/insights": "Rejection Insights",
+  "/dashboard/candidate/verify": "Verification",
 };
 
 export default function CandidateLayout({ children }: { children: React.ReactNode }) {

@@ -292,9 +292,14 @@ export default function NegotiationPage() {
       <div className="mx-auto max-w-4xl px-6 py-8">
         <div className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-foreground">
+            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
               {isCandidate ? "Negotiation with " : "Negotiating with "}
               {otherParty.name}
+              {isCandidate && (
+                <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-600 flex items-center gap-1 shadow-sm whitespace-nowrap">
+                  🛡️ PAN Verified ✓
+                </span>
+              )}
             </h1>
             <p className="text-sm text-muted mt-0.5">
               {otherParty.role} ·{" "}

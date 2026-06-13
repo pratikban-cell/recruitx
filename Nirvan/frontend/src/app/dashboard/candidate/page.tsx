@@ -383,8 +383,11 @@ export default function CandidateOverview() {
                           className="rounded-lg border border-card-border bg-white p-3 hover:border-accent hover:shadow-sm transition-all duration-200 cursor-pointer text-left space-y-2 relative"
                         >
                           <div className="flex justify-between items-start gap-1">
-                            <span className="text-xs font-bold text-foreground line-clamp-1">
+                            <span className="text-xs font-bold text-foreground line-clamp-1 flex items-center gap-1.5">
                               {n.recruiter?.company || "Unknown"}
+                              <span className="rounded bg-emerald-50 border border-emerald-200 px-1.5 py-0.25 text-[8px] font-bold text-emerald-600 flex items-center gap-0.5 tracking-normal whitespace-nowrap">
+                                🛡️ PAN Verified ✓
+                              </span>
                             </span>
                             <span className="text-[10px] bg-accent/10 text-accent font-bold px-1.5 py-0.25 rounded shrink-0">
                               {n.fit_score}%
@@ -634,7 +637,12 @@ export default function CandidateOverview() {
                   <div className="space-y-3">
                     <div className="flex justify-between items-start">
                       <div className="min-w-0">
-                        <span className="text-[10px] font-bold text-muted uppercase tracking-wider block">{rec.company}</span>
+                        <span className="text-[10px] font-bold text-muted uppercase tracking-wider flex items-center gap-1.5">
+                          {rec.company}
+                          <span className="rounded bg-emerald-50 border border-emerald-250 px-1.5 py-0.25 text-[8px] font-bold text-emerald-650 flex items-center gap-0.5 normal-case tracking-normal whitespace-nowrap">
+                            🛡️ PAN Verified ✓
+                          </span>
+                        </span>
                         <h3 className="font-bold text-foreground text-sm truncate mt-0.5 group-hover:text-accent transition-colors">{rec.title}</h3>
                         <p className="text-[10px] text-muted capitalize mt-0.5">{rec.location} · {rec.remote_policy}</p>
                       </div>

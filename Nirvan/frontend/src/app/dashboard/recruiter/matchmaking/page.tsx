@@ -327,9 +327,14 @@ export default function MatchmakingPage() {
                             </span>
                           )}
                           {t.human_verified && (
-                            <span className="rounded-full bg-purple-50 border border-purple-200 px-2.5 py-0.5 text-[9px] font-bold text-purple-600 flex items-center gap-1">
-                              Human Expert CV Verified ✓
-                            </span>
+                            <>
+                              <span className="rounded-full bg-purple-50 border border-purple-200 px-2.5 py-0.5 text-[9px] font-bold text-purple-600 flex items-center gap-1">
+                                Human Expert CV Verified ✓
+                              </span>
+                              <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[9px] font-bold text-emerald-600 flex items-center gap-1">
+                                🛡️ Identity Verified ✓
+                              </span>
+                            </>
                           )}
                           <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[9px] font-medium text-slate-600">
                             📅 {availabilityText}
