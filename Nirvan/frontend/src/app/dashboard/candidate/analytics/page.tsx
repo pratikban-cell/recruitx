@@ -12,7 +12,7 @@ type Negotiation = {
   status: string;
   fit_score: number | null;
   created_at: string;
-  recruiter: { company: string }[] | null;
+  recruiter: { company: string } | { company: string }[] | null;
 };
 
 // Monthly data mapping initialized with baseline mock values
@@ -199,30 +199,34 @@ export default function CandidateAnalytics() {
             <h2 className="text-sm font-semibold text-foreground">Fit Score Breakdown</h2>
           </div>
           <div className="p-6 space-y-4 max-h-[260px] overflow-y-auto">
-            {negotiations.map((n, i) => (
-              <div key={n.id} className="group">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs font-semibold text-slate-700 transition-colors group-hover:text-accent">
-                    {n.recruiter?.[0]?.company || "Unknown"}
-                  </span>
-                  <span className="text-xs font-bold text-slate-800">{n.fit_score || 0}%</span>
+            {negotiations.map((n, i) => {
+              const recruiterObj = Array.isArray(n.recruiter) ? n.recruiter[0] : n.recruiter;
+              const companyName = recruiterObj?.company || "Unknown";
+              return (
+                <div key={n.id} className="group">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-semibold text-slate-700 transition-colors group-hover:text-accent">
+                      {companyName}
+                    </span>
+                    <span className="text-xs font-bold text-slate-800">{n.fit_score || 0}%</span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden relative">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${n.fit_score || 0}%` }}
+                      transition={{ duration: 0.8, delay: i * 0.05, ease: "easeOut" }}
+                      className={`h-full rounded-full ${
+                        (n.fit_score || 0) >= 70
+                          ? "bg-emerald-500"
+                          : (n.fit_score || 0) >= 50
+                          ? "bg-amber-500"
+                          : "bg-rose-500"
+                      }`}
+                    />
+                  </div>
                 </div>
-                <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden relative">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${n.fit_score || 0}%` }}
-                    transition={{ duration: 0.8, delay: i * 0.05, ease: "easeOut" }}
-                    className={`h-full rounded-full ${
-                      (n.fit_score || 0) >= 70
-                        ? "bg-emerald-500"
-                        : (n.fit_score || 0) >= 50
-                        ? "bg-amber-500"
-                        : "bg-rose-500"
-                    }`}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
