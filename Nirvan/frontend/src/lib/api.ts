@@ -318,6 +318,11 @@ export async function getTalentPool(filters: {
   salaryMax?: number;
   title?: string;
   remote?: string;
+  category?: string;
+  experienceLevel?: string;
+  verificationType?: string;
+  availability?: string;
+  jobId?: string;
 }) {
   try {
     const params = new URLSearchParams();
@@ -326,11 +331,26 @@ export async function getTalentPool(filters: {
       params.append("salary_max", filters.salaryMax.toString());
     if (filters.title) params.append("title", filters.title);
     if (filters.remote) params.append("remote", filters.remote);
+    if (filters.category) params.append("category", filters.category);
+    if (filters.experienceLevel) params.append("experience_level", filters.experienceLevel);
+    if (filters.verificationType) params.append("verification_type", filters.verificationType);
+    if (filters.availability) params.append("availability", filters.availability);
+    if (filters.jobId) params.append("job_id", filters.jobId);
 
     const res = await apiFetch(`/api/recruiters/talent?${params.toString()}`);
-    return safeJson(res, []);
+    return safeJson(res, { talent: [] });
   } catch (err) {
     console.error("getTalentPool failed:", err);
+    return { talent: [] };
+  }
+}
+
+export async function getPersonalizedRecommendations() {
+  try {
+    const res = await apiFetch(`/api/matching/recommendations`);
+    return safeJson(res, []);
+  } catch (err) {
+    console.error("getPersonalizedRecommendations failed:", err);
     return [];
   }
 }

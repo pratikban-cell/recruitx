@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { createClient } from "@/lib/supabase-client";
 import { useEffect, useState } from "react";
@@ -36,6 +36,12 @@ type CandidateProfile = {
   remote_pref: boolean;
   bio: string;
   email: string;
+  github_verified?: boolean;
+  human_verified?: boolean;
+  category?: string;
+  experience_level?: string;
+  availability_days?: string;
+  fit_score?: number;
 };
 
 // Colors matching columns in premium design system
@@ -112,6 +118,10 @@ export default function RecruiterCandidates() {
   const [searchSkills, setSearchSkills] = useState("");
   const [searchSalaryMax, setSearchSalaryMax] = useState("");
   const [searchRemoteOnly, setSearchRemoteOnly] = useState(false);
+  const [searchCategory, setSearchCategory] = useState("any");
+  const [searchExperienceLevel, setSearchExperienceLevel] = useState("any");
+  const [searchVerificationType, setSearchVerificationType] = useState("any");
+  const [searchAvailability, setSearchAvailability] = useState("any");
   const [searchLoading, setSearchLoading] = useState(false);
   const [initiatingId, setInitiatingId] = useState<string | null>(null);
 
@@ -433,6 +443,10 @@ export default function RecruiterCandidates() {
         skills: searchSkills || undefined,
         salaryMax: searchSalaryMax ? parseInt(searchSalaryMax) : undefined,
         remote: searchRemoteOnly ? "true" : undefined,
+        category: searchCategory !== "any" ? searchCategory : undefined,
+        experienceLevel: searchExperienceLevel !== "any" ? searchExperienceLevel : undefined,
+        verificationType: searchVerificationType !== "any" ? searchVerificationType : undefined,
+        availability: searchAvailability !== "any" ? searchAvailability : undefined,
       });
       if (res && res.talent) {
         setTalent(res.talent);
@@ -852,13 +866,77 @@ export default function RecruiterCandidates() {
       ) : (
         /* --- ADVANCED SEARCH FILTER PANEL & SOURCE TALENT TAB --- */
         <>
-          <div className="rounded-xl border border-card-border bg-white p-5 shadow-sm space-y-4">
-            <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">
-              Search Parameters
+          <div className="rounded-xl border border-card-border bg-white p-5 shadow-sm space-y-4 text-left">
+            <h2 className="text-xs font-bold text-foreground uppercase tracking-wider">
+              🔍 Sourcing Parameters
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <label className="block text-xs font-medium text-foreground mb-1.5">
+                <label className="block text-xs font-semibold text-muted uppercase mb-1.5">
+                  Category
+                </label>
+                <select
+                  value={searchCategory}
+                  onChange={(e) => setSearchCategory(e.target.value)}
+                  className="w-full rounded-lg border border-card-border bg-white px-3 py-2 text-xs font-semibold text-foreground focus:border-accent focus:outline-none"
+                >
+                  <option value="any">Any Category</option>
+                  <option value="DevOps">DevOps</option>
+                  <option value="Frontend">Frontend</option>
+                  <option value="Backend">Backend</option>
+                  <option value="AI/ML">AI/ML</option>
+                  <option value="Data">Data</option>
+                  <option value="Full Stack">Full Stack</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted uppercase mb-1.5">
+                  Experience Level
+                </label>
+                <select
+                  value={searchExperienceLevel}
+                  onChange={(e) => setSearchExperienceLevel(e.target.value)}
+                  className="w-full rounded-lg border border-card-border bg-white px-3 py-2 text-xs font-semibold text-foreground focus:border-accent focus:outline-none"
+                >
+                  <option value="any">Any Experience</option>
+                  <option value="Junior">Junior (Intern/Junior)</option>
+                  <option value="Mid">Mid Level</option>
+                  <option value="Senior">Senior (5yr+ / Lead)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted uppercase mb-1.5">
+                  Verification Type
+                </label>
+                <select
+                  value={searchVerificationType}
+                  onChange={(e) => setSearchVerificationType(e.target.value)}
+                  className="w-full rounded-lg border border-card-border bg-white px-3 py-2 text-xs font-semibold text-foreground focus:border-accent focus:outline-none"
+                >
+                  <option value="any">Any Verification</option>
+                  <option value="github">GitHub Scanned</option>
+                  <option value="human">Human Expert CV Verified</option>
+                  <option value="both">Both Verified (Pre-screened)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted uppercase mb-1.5">
+                  Availability
+                </label>
+                <select
+                  value={searchAvailability}
+                  onChange={(e) => setSearchAvailability(e.target.value)}
+                  className="w-full rounded-lg border border-card-border bg-white px-3 py-2 text-xs font-semibold text-foreground focus:border-accent focus:outline-none"
+                >
+                  <option value="any">Any Availability</option>
+                  <option value="immediate">Immediate</option>
+                  <option value="30">Within 30 Days</option>
+                  <option value="60">Within 60 Days</option>
+                  <option value="90">Within 90 Days</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-muted uppercase mb-1.5">
                   Job Title keyword
                 </label>
                 <input
@@ -866,11 +944,11 @@ export default function RecruiterCandidates() {
                   value={searchTitle}
                   onChange={(e) => setSearchTitle(e.target.value)}
                   placeholder="e.g. Frontend"
-                  className="w-full rounded-lg border border-card-border bg-white px-3 py-2 text-xs text-foreground placeholder:text-muted/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="w-full rounded-lg border border-card-border bg-white px-3 py-2 text-xs font-semibold text-foreground placeholder:text-muted/50 focus:border-accent focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-foreground mb-1.5">
+                <label className="block text-xs font-semibold text-muted uppercase mb-1.5">
                   Required Skills (comma separated)
                 </label>
                 <input
@@ -878,11 +956,11 @@ export default function RecruiterCandidates() {
                   value={searchSkills}
                   onChange={(e) => setSearchSkills(e.target.value)}
                   placeholder="e.g. React, Go"
-                  className="w-full rounded-lg border border-card-border bg-white px-3 py-2 text-xs text-foreground placeholder:text-muted/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="w-full rounded-lg border border-card-border bg-white px-3 py-2 text-xs font-semibold text-foreground placeholder:text-muted/50 focus:border-accent focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-foreground mb-1.5">
+                <label className="block text-xs font-semibold text-muted uppercase mb-1.5">
                   Max Salary floor ($)
                 </label>
                 <input
@@ -890,7 +968,7 @@ export default function RecruiterCandidates() {
                   value={searchSalaryMax}
                   onChange={(e) => setSearchSalaryMax(e.target.value)}
                   placeholder="e.g. 140000"
-                  className="w-full rounded-lg border border-card-border bg-white px-3 py-2 text-xs text-foreground placeholder:text-muted/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                  className="w-full rounded-lg border border-card-border bg-white px-3 py-2 text-xs font-semibold text-foreground placeholder:text-muted/50 focus:border-accent focus:outline-none"
                 />
               </div>
             </div>
@@ -901,11 +979,11 @@ export default function RecruiterCandidates() {
                   id="searchRemote"
                   checked={searchRemoteOnly}
                   onChange={(e) => setSearchRemoteOnly(e.target.checked)}
-                  className="h-4 w-4 rounded border-card-border text-accent focus:ring-accent/20"
+                  className="h-4 w-4 rounded border-card-border text-accent focus:ring-accent/20 cursor-pointer"
                 />
                 <label
                   htmlFor="searchRemote"
-                  className="text-xs text-foreground"
+                  className="text-xs text-slate-700 font-semibold cursor-pointer"
                 >
                   Prefer Remote Only
                 </label>
@@ -913,9 +991,9 @@ export default function RecruiterCandidates() {
               <button
                 onClick={fetchTalent}
                 disabled={searchLoading}
-                className="rounded-lg bg-accent px-5 py-2 text-xs font-semibold text-white hover:bg-accent/90 disabled:opacity-50 transition-all shadow-sm"
+                className="rounded-lg bg-accent px-5 py-2 text-xs font-bold text-white hover:bg-accent/90 disabled:opacity-50 transition-all shadow-sm cursor-pointer"
               >
-                {searchLoading ? "Searching..." : "Apply Filters"}
+                {searchLoading ? "Sourcing Candidates..." : "Search Talent Pool"}
               </button>
             </div>
           </div>
@@ -936,64 +1014,112 @@ export default function RecruiterCandidates() {
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-4">
-              {talent.map((t) => (
-                <div
-                  key={t.id}
-                  className="rounded-xl border border-card-border bg-white p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-md transition-shadow"
-                >
-                  <div className="space-y-2 max-w-xl">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/5 text-sm font-bold text-accent">
-                        {t.name?.[0] || "?"}
+              {talent.map((t) => {
+                const anonymizedId = `Candidate #${t.id.slice(0, 4).toUpperCase()}`;
+                
+                let scoreColor = "text-green-600 bg-green-50 border-green-200";
+                if (t.fit_score && t.fit_score < 60) {
+                  scoreColor = "text-red-500 bg-red-50 border-red-200";
+                } else if (t.fit_score && t.fit_score < 80) {
+                  scoreColor = "text-amber-600 bg-amber-50 border-amber-200";
+                }
+
+                const availabilityText = t.availability_days === "immediate" ? "Available Immediately" : `Available in ${t.availability_days} Days`;
+
+                return (
+                  <div
+                    key={t.id}
+                    className="rounded-xl border border-card-border bg-white p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-md transition-shadow relative overflow-hidden group"
+                  >
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent/5 via-accent/30 to-accent/5 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                    
+                    <div className="space-y-2 max-w-xl text-left">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 border border-card-border text-sm font-bold text-slate-700">
+                          🤖
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-bold text-foreground text-sm">
+                              {anonymizedId}
+                            </h3>
+                            <span className="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 rounded-full font-medium">
+                              {t.category || "Generalist"} · {t.experience_level || "Mid"}
+                            </span>
+                          </div>
+                          <p className="text-xs font-semibold text-accent mt-0.5">
+                            {t.title || "Software Engineer"}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground">
-                          {t.name || "Anonymous Candidate"}
-                        </h3>
-                        <p className="text-xs font-medium text-accent">
-                          {t.title || "No Title Specified"}
+
+                      {t.bio && (
+                        <p className="text-xs text-muted/80 leading-relaxed">
+                          {t.bio}
                         </p>
+                      )}
+
+                      <div className="flex flex-wrap gap-1.5 pt-1 items-center">
+                        {t.github_verified && (
+                          <span className="rounded-full bg-blue-50 border border-blue-200 px-2.5 py-0.5 text-[9px] font-bold text-blue-600 flex items-center gap-1">
+                            GitHub Verified ✓
+                          </span>
+                        )}
+                        {t.human_verified && (
+                          <span className="rounded-full bg-purple-50 border border-purple-200 px-2.5 py-0.5 text-[9px] font-bold text-purple-600 flex items-center gap-1">
+                            Human Expert CV Verified ✓
+                          </span>
+                        )}
+                        <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[9px] font-medium text-slate-600">
+                          📅 {availabilityText}
+                        </span>
+                        {t.remote_pref && (
+                          <span className="rounded-full bg-green-50 border border-green-200 px-2.5 py-0.5 text-[9px] font-bold text-green-600">
+                            🏠 Remote
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap gap-1 pt-1.5">
+                        {t.skills.slice(0, 5).map((s) => (
+                          <span
+                            key={s}
+                            className="rounded-lg bg-slate-50 border border-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600"
+                          >
+                            {s}
+                          </span>
+                        ))}
                       </div>
                     </div>
-                    {t.bio && (
-                      <p className="text-xs text-muted/80 line-clamp-2">
-                        {t.bio}
-                      </p>
-                    )}
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {t.skills.map((s) => (
-                        <span
-                          key={s}
-                          className="rounded-full bg-gray-100 px-2 py-0.5 text-[9px] font-medium text-muted"
-                        >
-                          {s}
-                        </span>
-                      ))}
-                      {t.remote_pref && (
-                        <span className="rounded-full bg-green-50 px-2 py-0.5 text-[9px] font-medium text-green-600">
-                          🏠 Remote
-                        </span>
-                      )}
+
+                    <div className="flex flex-col items-end gap-3 sm:text-right self-start sm:self-center shrink-0">
+                      <div className="text-right">
+                        <div className="flex items-center gap-2 justify-end">
+                          <span className="text-[10px] text-muted font-medium">calibrated fit</span>
+                          <span className={`text-xs font-extrabold px-2 py-0.5 rounded-lg border ${scoreColor}`}>
+                            {t.fit_score}%
+                          </span>
+                        </div>
+                        {t.salary_min && (
+                          <span className="text-xs font-bold text-slate-800 block mt-1">
+                            Salary Floor: ${t.salary_min.toLocaleString()}/yr
+                          </span>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => handleInitiate(t.id)}
+                        disabled={initiatingId !== null}
+                        className="rounded-lg bg-foreground hover:bg-foreground/90 px-4 py-2 text-xs font-bold text-white disabled:opacity-50 transition-all shadow-sm whitespace-nowrap cursor-pointer"
+                      >
+                        {initiatingId === t.id
+                          ? "Initiating A2A Loop..."
+                          : "Initiate AI Match"}
+                      </button>
                     </div>
                   </div>
-                  <div className="flex flex-col items-end gap-2 sm:text-right self-start sm:self-center">
-                    {t.salary_min && (
-                      <span className="text-xs font-semibold text-foreground">
-                        Salary Floor: ${t.salary_min.toLocaleString()}/yr
-                      </span>
-                    )}
-                    <button
-                      onClick={() => handleInitiate(t.id)}
-                      disabled={initiatingId !== null}
-                      className="rounded-lg bg-foreground px-4 py-2 text-xs font-semibold text-white hover:bg-foreground/90 disabled:opacity-50 transition-all shadow-sm"
-                    >
-                      {initiatingId === t.id
-                        ? "Initiating Loop..."
-                        : "Initiate AI Match"}
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </>

@@ -1,7 +1,7 @@
-﻿"use client";
+"use client";
 
 import { createClient } from "@/lib/supabase-client";
-import { candidateGetTask } from "@/lib/api";
+import { candidateGetTask, getPersonalizedRecommendations, initiateNegotiation } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -51,6 +51,74 @@ export default function CandidateOverview() {
   const [syncingDirectives, setSyncingDirectives] = useState(false);
   const [syncSuccess, setSyncSuccess] = useState(false);
 
+  // Recommendations state
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(true);
+  const [candidateId, setCandidateId] = useState<string | null>(null);
+  const [negotiatingJobId, setNegotiatingJobId] = useState<string | null>(null);
+
+  const handleLetAgentNegotiate = async (rec: any) => {
+    if (!candidateId) return;
+    setNegotiatingJobId(rec.job_id);
+    try {
+      const res = await initiateNegotiation(rec.recruiter_id, candidateId, rec.job_id);
+      if (res && res.negotiation_id) {
+        setActivities(prev => [
+          {
+            id: Date.now(),
+            action: "🤝 Negotiation initiated",
+            detail: `Agent approached ${rec.company} for the ${rec.title} role.`,
+            time: "Just now",
+            type: "success"
+          },
+          ...prev
+        ]);
+        
+        const { data: negoData } = await supabase
+          .from("negotiations")
+          .select("id, status, fit_score, created_at, candidate_notes, recruiter_notes, recruiter:recruiters(company, position)")
+          .eq("candidate_id", candidateId)
+          .order("created_at", { ascending: false });
+          
+        if (negoData) {
+          const enrichedNegoData = await Promise.all(negoData.map(async (n: any) => {
+            const match = (n.candidate_notes || "").match(/[a-f0-9\-]{36}/);
+            if (match) {
+              const jobId = match[0];
+              const { data: job } = await supabase
+                .from("jobs")
+                .select("company, title")
+                .eq("id", jobId)
+                .single();
+              if (job) {
+                return {
+                  ...n,
+                  recruiter: {
+                    company: job.company,
+                    position: job.title
+                  }
+                };
+              }
+            }
+            return n;
+          }));
+          setNegotiations(enrichedNegoData);
+        }
+        
+        const recs = await getPersonalizedRecommendations();
+        setRecommendations(recs);
+        
+        router.push(`/negotiations/${res.negotiation_id}`);
+      } else {
+        alert("Failed to start negotiation.");
+      }
+    } catch (err) {
+      console.error("Failed to start negotiation:", err);
+    } finally {
+      setNegotiatingJobId(null);
+    }
+  };
+
   // Live activity feed state
   const [activities, setActivities] = useState([
     { id: 1, action: "Skills verified", detail: "GitHub OAuth token verified: read:user, repo scopes checked.", time: "2 min ago", type: "success" },
@@ -74,6 +142,7 @@ export default function CandidateOverview() {
         .single();
 
       if (candidate) {
+        setCandidateId(candidate.id);
         // Load settings values from DB
         if (candidate.salary_min) setSalaryMin(candidate.salary_min);
         setRemoteOnly(candidate.remote_pref ?? true);
@@ -81,6 +150,17 @@ export default function CandidateOverview() {
         if (availStr.includes("negotiation_style:")) {
           const match = availStr.match(/negotiation_style:([^|]+)/);
           if (match) setNegotiationStyle(match[1]);
+        }
+
+        // Fetch recommendations
+        setLoadingRecommendations(true);
+        try {
+          const recs = await getPersonalizedRecommendations();
+          setRecommendations(recs);
+        } catch (err) {
+          console.error("Failed to load recommendations:", err);
+        } finally {
+          setLoadingRecommendations(false);
         }
 
         const { data: negoData } = await supabase
@@ -514,52 +594,114 @@ export default function CandidateOverview() {
         </div>
       </div>
 
-      {/* Quick stats distribution */}
-      <div>
-        <div className="flex items-center justify-between mb-4">
+      {/* Personalized Job Board Recommendations */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-foreground">Sourcing Analytics Overview</h2>
-            <p className="text-xs text-muted mt-0.5">Direct summary of ongoing candidate matching algorithms.</p>
+            <h2 className="text-base font-bold text-foreground">⚡ Your Personalized Job Recommendations</h2>
+            <p className="text-xs text-muted mt-0.5">Highly targeted matches calibrated by your agent's dynamic fit score criteria.</p>
           </div>
+          <Link href="/jobs" className="text-xs font-semibold text-accent hover:text-accent-dark">
+            View Public Job Board &rarr;
+          </Link>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
-          <div className="md:col-span-2 rounded-xl border border-card-border bg-white p-5 shadow-sm">
-            <span className="text-[11px] font-semibold text-muted uppercase block mb-3">Fit Score Distribution Chart</span>
-            <InteractiveAreaChart
-              data={negotiations.map((n) => ({
-                label: n.recruiter?.company || "Unknown",
-                value: n.fit_score || 0,
-              })).reverse()}
-              height={140}
-              lineColor="#266df0"
-              valueSuffix="%"
-            />
+        
+        {loadingRecommendations ? (
+          <div className="flex items-center justify-center p-12 rounded-xl border border-card-border bg-white">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
           </div>
+        ) : recommendations.length === 0 ? (
+          <div className="text-center py-12 rounded-xl border border-dashed border-card-border bg-white p-6">
+            <p className="text-sm text-muted">No personalized recommendations available yet.</p>
+            <p className="text-xs text-muted/60 mt-1">Make sure your profile title and target skills are completed in settings.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {recommendations.slice(0, 3).map((rec) => {
+              const hasExistingNego = !!rec.negotiation_id;
+              
+              let scoreColor = "text-green-600 bg-green-50 border-green-200";
+              if (rec.fit_score < 60) {
+                scoreColor = "text-red-500 bg-red-50 border-red-200";
+              } else if (rec.fit_score < 80) {
+                scoreColor = "text-amber-600 bg-amber-50 border-amber-200";
+              }
+              
+              return (
+                <div key={rec.job_id} className="rounded-xl border border-card-border bg-white p-5 shadow-sm hover:shadow-md hover:border-accent/20 transition-all duration-300 flex flex-col justify-between text-left space-y-4 relative overflow-hidden group">
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent/10 via-accent to-accent/10 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
+                  
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div className="min-w-0">
+                        <span className="text-[10px] font-bold text-muted uppercase tracking-wider block">{rec.company}</span>
+                        <h3 className="font-bold text-foreground text-sm truncate mt-0.5 group-hover:text-accent transition-colors">{rec.title}</h3>
+                        <p className="text-[10px] text-muted capitalize mt-0.5">{rec.location} · {rec.remote_policy}</p>
+                      </div>
+                      <span className={`text-sm font-extrabold px-2 py-1 rounded-lg border shrink-0 ${scoreColor}`}>
+                        {rec.fit_score}%
+                      </span>
+                    </div>
 
-          <div className="rounded-xl border border-card-border bg-white p-5 shadow-sm flex flex-col justify-between">
-            <div>
-              <span className="text-[11px] font-semibold text-muted uppercase block mb-4">Verification Statistics</span>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-muted">Total Sourced</span>
-                  <span className="font-bold text-foreground">{negotiations.length}</span>
+                    <div className="space-y-1.5 pt-2 border-t border-slate-50">
+                      <span className="text-[9px] font-bold text-muted uppercase block">Why You Match</span>
+                      <div className="space-y-1">
+                        {rec.why_matched?.slice(0, 2).map((why: string, idx: number) => (
+                          <div key={idx} className="flex items-start gap-1.5 text-[11px] text-slate-700 leading-snug">
+                            <span className="text-green-500 font-bold shrink-0">✓</span>
+                            <span>{why}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {rec.missing && rec.missing.length > 0 && (
+                      <div className="space-y-1.5 pt-2">
+                        <span className="text-[9px] font-bold text-muted uppercase block">Calibrated Gaps</span>
+                        <div className="space-y-1">
+                          {rec.missing.slice(0, 1).map((gap: string, idx: number) => (
+                            <div key={idx} className="flex items-start gap-1.5 text-[11px] text-slate-500 leading-snug">
+                              <span className="text-amber-500 font-bold shrink-0">⚠</span>
+                              <span>{gap}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-50 flex items-center justify-between gap-3">
+                    {rec.salary_min ? (
+                      <span className="text-[11px] font-bold text-slate-800">
+                        ${(rec.salary_min/1000).toFixed(0)}k–${(rec.salary_max/1000).toFixed(0)}k/yr
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-muted font-medium">Salary unlisted</span>
+                    )}
+
+                    {hasExistingNego ? (
+                      <Link
+                        href={`/negotiations/${rec.negotiation_id}`}
+                        className="rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 px-3 py-1.5 text-xs font-bold transition-all whitespace-nowrap text-center"
+                      >
+                        {rec.negotiation_status === "matched" ? "🎉 Hired" :
+                         rec.negotiation_status === "scheduled" ? "📅 Interview" : "💬 View Negotiation"}
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={() => handleLetAgentNegotiate(rec)}
+                        disabled={negotiatingJobId !== null}
+                        className="rounded-lg bg-foreground hover:bg-foreground/90 text-white px-3.5 py-1.5 text-xs font-bold transition-all shadow-sm whitespace-nowrap"
+                      >
+                        {negotiatingJobId === rec.job_id ? "Agent approach..." : "Let Agent Negotiate"}
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-muted">Fit Confirmed</span>
-                  <span className="font-bold text-green-600">{negotiations.filter(n => n.status === "matched").length}</span>
-                </div>
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-muted">Scheduled Interviews</span>
-                  <span className="font-bold text-purple-600">{negotiations.filter(n => n.status === "scheduled").length}</span>
-                </div>
-              </div>
-            </div>
-            <div className="border-t border-slate-100 pt-3 flex justify-between items-center text-[11px] text-muted">
-              <span>Calibration style</span>
-              <span className="font-semibold text-slate-800 capitalize">{negotiationStyle}</span>
-            </div>
+              );
+            })}
           </div>
-        </div>
+        )}
       </div>
 
       {/* A2A Chat Transcript Slide-over/Modal */}

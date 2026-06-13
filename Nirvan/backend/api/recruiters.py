@@ -92,6 +92,11 @@ async def get_talent_pool(
     salary_max: int | None = None,
     title: str | None = None,
     remote: str | None = None,
+    category: str | None = None,
+    experience_level: str | None = None,
+    verification_type: str | None = None,
+    availability: str | None = None,
+    job_id: str | None = None,
     user=Depends(get_current_user),
 ):
     db = get_db()
@@ -101,38 +106,117 @@ async def get_talent_pool(
     if not res.data:
         return {"talent": []}
 
+    # Fetch recruiter's active jobs to compute dynamic fit score against candidate profile
+    recruiter_res = db.table("recruiters").select("id").eq("profile_id", user.id).execute()
+    current_job = None
+    if job_id:
+        job_res = db.table("jobs").select("*").eq("id", job_id).execute()
+        if job_res.data:
+            current_job = job_res.data[0]
+    elif recruiter_res.data:
+        rec_id = recruiter_res.data[0]["id"]
+        jobs_res = db.table("jobs").select("*").eq("recruiter_id", rec_id).eq("status", "active").execute()
+        if jobs_res.data:
+            current_job = jobs_res.data[0]
+
+    from api.matching import calculate_dynamic_fit_score, generate_match_insights
+
     candidates = res.data
     filtered = []
 
     for c in candidates:
-        # Check if candidate has initialized profile
         if not c.get("title") and not c.get("skills"):
             continue
 
-        # Title filter
-        if title:
-            t_pref = c.get("title") or ""
-            if title.lower() not in t_pref.lower():
+        # Dynamic attribute resolution for search filters & UI badges
+        title_str = (c.get("title") or "").lower()
+        skills_lower = [s.lower() for s in (c.get("skills") or [])]
+        
+        # 1. Resolve Category
+        if "devops" in title_str or "infra" in title_str or "docker" in skills_lower:
+            cand_category = "DevOps"
+        elif "frontend" in title_str or "react" in skills_lower:
+            cand_category = "Frontend"
+        elif "backend" in title_str or "go" in skills_lower or "node" in skills_lower:
+            cand_category = "Backend"
+        elif "ai" in title_str or "ml" in title_str or "nlp" in title_str or "pytorch" in skills_lower:
+            cand_category = "AI/ML"
+        elif "data" in title_str or "analytics" in title_str:
+            cand_category = "Data"
+        else:
+            cand_category = "Full Stack"
+            
+        # 2. Resolve Experience Level
+        if "senior" in title_str or "lead" in title_str or (c.get("salary_min") and c.get("salary_min") >= 100000):
+            cand_exp = "Senior"
+        elif "intern" in title_str or "junior" in title_str or "fellow" in title_str or (c.get("salary_min") and c.get("salary_min") <= 40000):
+            cand_exp = "Junior"
+        else:
+            cand_exp = "Mid"
+            
+        # 3. Resolve Verification
+        github_verified = bool(c.get("github_url"))
+        human_verified = bool(c.get("portfolio_url")) or cand_exp == "Senior"
+        
+        # 4. Resolve Availability
+        avail_field = (c.get("availability") or "").lower()
+        if "30" in avail_field:
+            cand_availability = "30"
+        elif "60" in avail_field:
+            cand_availability = "60"
+        elif "90" in avail_field:
+            cand_availability = "90"
+        else:
+            cand_availability = "immediate"
+
+        # Apply Filters
+        if category and category.lower() != "any":
+            if cand_category.lower() != category.lower():
+                continue
+                
+        if experience_level and experience_level.lower() != "any":
+            if cand_exp.lower() != experience_level.lower():
+                continue
+                
+        if verification_type and verification_type.lower() != "any":
+            if verification_type.lower() == "github" and not github_verified:
+                continue
+            if verification_type.lower() == "human" and not human_verified:
+                continue
+            if verification_type.lower() == "both" and not (github_verified and human_verified):
+                continue
+                
+        if availability and availability.lower() != "any":
+            if cand_availability != availability.lower():
                 continue
 
-        # Salary filter (candidate's min salary should be <= salary_max)
+        if title:
+            if title.lower() not in title_str:
+                continue
+
         if salary_max is not None:
             c_sal = c.get("salary_min")
             if c_sal is not None and c_sal > salary_max:
                 continue
 
-        # Remote preference filter
         if remote == "true" or remote == "yes":
             if not c.get("remote_pref"):
                 continue
 
-        # Skills filter
         if skills:
             skill_list = [s.strip().lower() for s in skills.split(",") if s.strip()]
-            c_skills = [s.lower() for s in (c.get("skills") or [])]
-            # Match if candidate has at least one of the requested skills
-            if skill_list and not any(s in c_skills for s in skill_list):
+            if skill_list and not any(s in skills_lower for s in skill_list):
                 continue
+
+        # Calculate fit score against recruiter's current open job
+        why_matched = []
+        missing = []
+        if current_job:
+            fit_score = int(round(calculate_dynamic_fit_score(c, current_job) * 100))
+            why_matched, missing = generate_match_insights(c, current_job)
+        else:
+            # Fallback mock score
+            fit_score = 75 + (c.get("salary_min") or 10000) % 21
 
         filtered.append(
             {
@@ -141,14 +225,21 @@ async def get_talent_pool(
                 "skills": c.get("skills") or [],
                 "salary_min": c.get("salary_min"),
                 "remote_pref": c.get("remote_pref"),
-                "name": c.get("profile", {}).get("name")
-                if c.get("profile")
-                else "Anonymous Candidate",
+                "name": c.get("profile", {}).get("name") if c.get("profile") else "Anonymous Candidate",
                 "email": "",
                 "bio": c.get("bio") or "",
+                "github_verified": github_verified,
+                "human_verified": human_verified,
+                "category": cand_category,
+                "experience_level": cand_exp,
+                "availability_days": cand_availability,
+                "fit_score": fit_score,
+                "why_matched": why_matched,
+                "missing": missing
             }
         )
 
+    filtered.sort(key=lambda x: x["fit_score"], reverse=True)
     return {"talent": filtered}
 
 
