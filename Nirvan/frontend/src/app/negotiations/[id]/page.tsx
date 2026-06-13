@@ -29,6 +29,9 @@ export default function NegotiationPage() {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [inputText, setInputText] = useState("");
+  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectCategory, setRejectCategory] = useState("salary_mismatch");
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -460,25 +463,8 @@ export default function NegotiationPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={async () => {
-                    if (
-                      confirm(
-                        "Reject Candidate?\n\nThis will mark the negotiation as rejected and update the application status to rejected.",
-                      )
-                    ) {
-                      const res = await updateNegotiationStatus(
-                        id as string,
-                        "rejected",
-                      );
-                      if (res.status === "updated") {
-                        setNegotiation((prev: any) => ({
-                          ...prev,
-                          status: "rejected",
-                        }));
-                      }
-                    }
-                  }}
-                  className="rounded-lg bg-red-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-red-700 transition-colors shadow-sm"
+                  onClick={() => setIsRejectModalOpen(true)}
+                  className="rounded-lg bg-red-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-red-700 transition-colors shadow-sm animate-in fade-in"
                 >
                   ❌ Reject Candidate
                 </button>
@@ -506,6 +492,92 @@ export default function NegotiationPage() {
             </div>
           )}
       </div>
+
+      {/* Reject Modal */}
+      {isRejectModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden animate-in zoom-in-95 duration-200 text-left">
+            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h3 className="font-bold text-slate-800 text-sm tracking-tight flex items-center gap-2">
+                ❌ Reject Candidate Feedback
+              </h3>
+              <button
+                onClick={() => setIsRejectModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 text-sm font-semibold cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Rejection Category</label>
+                <select
+                  value={rejectCategory}
+                  onChange={(e) => setRejectCategory(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-700 bg-white focus:outline-none focus:border-slate-350"
+                >
+                  <option value="salary_mismatch">Salary expectation mismatch</option>
+                  <option value="skill_gap_verified">Skill gap (Verified)</option>
+                  <option value="skill_gap_unverified">Skill gap (Unverified)</option>
+                  <option value="availability_mismatch">Availability mismatch (Notice period)</option>
+                  <option value="culture_mismatch">Culture mismatch</option>
+                  <option value="dealbreaker_triggered">Dealbreaker triggered</option>
+                  <option value="experience_level_mismatch">Experience level mismatch</option>
+                </select>
+              </div>
+              
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Constructive Feedback (Rejection Reason)</label>
+                <textarea
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="e.g. Salary expectation mismatch. Your target is NPR 120,000 but market range is NPR 85,000-100,000."
+                  rows={4}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs text-slate-700 focus:outline-none focus:border-slate-350 placeholder-slate-400"
+                />
+              </div>
+            </div>
+            <div className="p-5 border-t border-slate-100 flex items-center justify-end gap-2 bg-slate-50/50">
+              <button
+                type="button"
+                onClick={() => setIsRejectModalOpen(false)}
+                className="px-4 py-2 text-xs font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  setSending(true);
+                  try {
+                    const res = await updateNegotiationStatus(
+                      id as string,
+                      "rejected",
+                      rejectReason || "Manually rejected by recruiter",
+                      [rejectCategory]
+                    );
+                    if (res.status === "updated") {
+                      setNegotiation((prev: any) => ({
+                        ...prev,
+                        status: "rejected",
+                      }));
+                      setIsRejectModalOpen(false);
+                    }
+                  } catch (err) {
+                    console.error(err);
+                  } finally {
+                    setSending(false);
+                  }
+                }}
+                disabled={sending}
+                className="px-4 py-2 text-xs font-bold text-white bg-red-600 rounded-lg hover:bg-red-700 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+              >
+                {sending ? "Rejecting..." : "Confirm Rejection"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

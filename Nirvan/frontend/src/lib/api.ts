@@ -418,12 +418,18 @@ export async function getCoaching(
 export async function updateNegotiationStatus(
   negotiationId: string,
   status: "active" | "matched" | "scheduled" | "completed" | "rejected",
+  rejectionReasons?: string,
+  rejectionCategories?: string[],
 ) {
   try {
     const res = await apiFetch(`/api/negotiations/${negotiationId}/status`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
+      body: JSON.stringify({
+        status,
+        rejection_reasons: rejectionReasons,
+        rejection_categories: rejectionCategories,
+      }),
     });
     return safeJson(res, {});
   } catch (err) {

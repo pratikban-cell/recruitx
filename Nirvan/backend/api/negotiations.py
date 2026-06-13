@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 import uuid
@@ -20,6 +20,59 @@ from db.client import get_db
 from tasks.queue import dispatch_task
 
 router = APIRouter(prefix="/api/negotiations", tags=["negotiations"])
+
+
+def get_triggered_dealbreakers_details(input: FitScoreInput) -> tuple[str, list[str]]:
+    reasons = []
+    categories = []
+    
+    # 1. Salary check
+    has_salary_db = any("salary limit" in d.lower() for d in input.recruiter_dealbreakers)
+    if has_salary_db and input.candidate_salary_min and input.recruiter_salary_ceiling:
+        if input.candidate_salary_min > input.recruiter_salary_ceiling:
+            reasons.append(f"Salary expectation mismatch. Candidate floor (NPR {input.candidate_salary_min:,}) exceeds recruiter ceiling (NPR {input.recruiter_salary_ceiling:,}).")
+            categories.append("salary_mismatch")
+
+    # 2. Candidate dealbreakers
+    for d in input.candidate_dealbreakers:
+        d_clean = d.lower().strip()
+        if "onsite" in d_clean or "on-site" in d_clean:
+            if "no" in d_clean or "not" in d_clean or "remote only" in d_clean or "requires remote" in d_clean:
+                rec_str = str(input.recruiter_must_haves).lower()
+                if "onsite" in rec_str or "on-site" in rec_str:
+                    reasons.append("Location preference mismatch: Candidate requires remote, but role requires onsite.")
+                    categories.append("availability_mismatch")
+        if "hybrid" in d_clean and ("no" in d_clean or "not" in d_clean):
+            rec_str = str(input.recruiter_must_haves).lower()
+            if "hybrid" in rec_str:
+                reasons.append("Location preference mismatch: Candidate rejects hybrid work, but role requires hybrid.")
+                categories.append("availability_mismatch")
+
+    # 3. Recruiter dealbreakers
+    for d in input.recruiter_dealbreakers:
+        d_clean = d.lower().strip()
+        if "remote" in d_clean and ("no" in d_clean or "not" in d_clean or "unable" in d_clean):
+            cand_str = str(input.candidate_priorities).lower() + str(input.candidate_dealbreakers).lower()
+            if "remote only" in cand_str or "requires remote" in cand_str:
+                reasons.append("Location preference mismatch: Recruiter rejects remote, but candidate requires remote.")
+                categories.append("availability_mismatch")
+
+        if "no " in d_clean or "not " in d_clean or "without " in d_clean:
+            skill_name = d_clean.replace("no ", "").replace("not ", "").replace("without ", "").strip()
+            if skill_name in input.candidate_verified_skills:
+                reasons.append(f"Constraint mismatch: Recruiter specifies '{d}' but candidate has '{skill_name}' verified.")
+                categories.append("culture_mismatch")
+        elif "need" in d_clean or "require" in d_clean or "must" in d_clean:
+            skill_name = d_clean.replace("requires ", "").replace("require ", "").replace("must have ", "").replace("needs ", "").replace("need ", "").strip()
+            if skill_name and skill_name not in input.candidate_verified_skills:
+                has_skill = any(skill_name in sk.lower() for sk in input.candidate_verified_skills.keys())
+                if not has_skill:
+                    reasons.append(f"Skill gap: Recruiter requires '{skill_name}', which is not verified on candidate profile.")
+                    categories.append("skill_gap_verified")
+                    
+    if not reasons:
+        return "Critical dealbreaker triggered.", ["culture_mismatch"]
+    return " | ".join(reasons), list(set(categories))
 
 
 async def run_negotiation_loop(negotiation_id: str):
@@ -250,7 +303,8 @@ async def run_negotiation_loop(negotiation_id: str):
 
     # 2. Check for initial dealbreakers
     if any_dealbreaker_triggered(fit_input):
-        sys_msg = "Negotiation terminated: critical dealbreaker triggered (mismatch in requirements or salary floor)."
+        reason, categories = get_triggered_dealbreakers_details(fit_input)
+        sys_msg = f"Negotiation terminated: critical dealbreaker triggered ({reason})."
         msg_id = str(uuid.uuid4())
         db.table("messages").insert(
             {
@@ -261,9 +315,20 @@ async def run_negotiation_loop(negotiation_id: str):
             }
         ).execute()
 
-        db.table("negotiations").update({"status": "rejected"}).eq(
-            "id", negotiation_id
-        ).execute()
+        try:
+            db.table("negotiations").update({
+                "status": "rejected",
+                "rejection_reasons": reason,
+                "rejection_categories": categories
+            }).eq("id", negotiation_id).execute()
+        except Exception:
+            # Fallback for old schema
+            import json as json_lib
+            serialized_notes = f"REJECT_INFO:{json_lib.dumps({'rejection_reasons': reason, 'rejection_categories': categories})}"
+            db.table("negotiations").update({
+                "status": "rejected",
+                "recruiter_notes": serialized_notes
+            }).eq("id", negotiation_id).execute()
 
         await manager.broadcast(
             negotiation_id,
@@ -952,9 +1017,27 @@ async def update_negotiation_status(
         return {"status": "unchanged", "negotiation_id": negotiation_id}
 
     # Update negotiations status
-    db.table("negotiations").update({"status": new_status}).eq(
-        "id", negotiation_id
-    ).execute()
+    if new_status == "rejected":
+        rejection_reasons = payload.get("rejection_reasons") or "Manually rejected by recruiter"
+        rejection_categories = payload.get("rejection_categories") or ["culture_mismatch"]
+        try:
+            db.table("negotiations").update({
+                "status": new_status,
+                "rejection_reasons": rejection_reasons,
+                "rejection_categories": rejection_categories
+            }).eq("id", negotiation_id).execute()
+        except Exception:
+            # Fallback for old schema
+            import json as json_lib
+            serialized_notes = f"REJECT_INFO:{json_lib.dumps({'rejection_reasons': rejection_reasons, 'rejection_categories': rejection_categories})}"
+            db.table("negotiations").update({
+                "status": new_status,
+                "recruiter_notes": serialized_notes
+            }).eq("id", negotiation_id).execute()
+    else:
+        db.table("negotiations").update({"status": new_status}).eq(
+            "id", negotiation_id
+        ).execute()
 
     # Broadcast a system log message in the chat
     msg_id = str(uuid.uuid4())
