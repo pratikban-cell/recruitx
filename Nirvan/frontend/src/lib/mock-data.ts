@@ -1,241 +1,60 @@
-export const mockNegotiations = [
-  {
-    id: "mock-1",
-    status: "active",
-    fit_score: 92,
-    created_at: new Date(Date.now() - 86400000).toISOString(),
-    recruiter: [{ company: "Stripe", position: "Senior Backend Engineer" }],
-  },
-  {
-    id: "mock-2",
-    status: "scheduled",
-    fit_score: 87,
-    created_at: new Date(Date.now() - 172800000).toISOString(),
-    recruiter: [{ company: "Vercel", position: "Platform Engineer" }],
-  },
-  {
-    id: "mock-3",
-    status: "matched",
-    fit_score: 78,
-    created_at: new Date(Date.now() - 259200000).toISOString(),
-    recruiter: [{ company: "Linear", position: "Full Stack Engineer" }],
-  },
-  {
-    id: "mock-4",
-    status: "rejected",
-    fit_score: 34,
-    created_at: new Date(Date.now() - 345600000).toISOString(),
-    recruiter: [{ company: "Google", position: "Staff Software Engineer" }],
-  },
-];
+export const mockNegotiations: Array<{
+  id: string;
+  status: string;
+  fit_score: number;
+  created_at: string;
+  recruiter: Array<{ company: string; position: string }>;
+}> = [];
 
-export const mockRecruiterNegotiations = [
-  {
-    id: "mock-1",
-    status: "active",
-    fit_score: 92,
-    created_at: new Date(Date.now() - 86400000).toISOString(),
-    candidate: [{ title: "Senior Frontend Engineer", skills: ["React", "TypeScript", "GraphQL"], salary_min: 95000 }],
-  },
-  {
-    id: "mock-2",
-    status: "scheduled",
-    fit_score: 87,
-    created_at: new Date(Date.now() - 172800000).toISOString(),
-    candidate: [{ title: "Backend Engineer", skills: ["Go", "PostgreSQL", "Kubernetes"], salary_min: 110000 }],
-  },
-  {
-    id: "mock-3",
-    status: "matched",
-    fit_score: 78,
-    created_at: new Date(Date.now() - 259200000).toISOString(),
-    candidate: [{ title: "ML Engineer", skills: ["Python", "PyTorch", "AWS"], salary_min: 130000 }],
-  },
-];
+export const mockRecruiterNegotiations: Array<{
+  id: string;
+  status: string;
+  fit_score: number;
+  created_at: string;
+  candidate: Array<{ title: string; skills: string[]; salary_min: number }>;
+}> = [];
 
-export const mockKanbanData = [
-  {
-    id: "kb-1",
-    candidate_name: "Luffy",
-    title: "DevOps Intern",
-    company: "Leapfrog",
-    fit_score: 78,
-    status: "sourcing",
-    action_label: "Start Agent",
-    skills: ["Docker", "Linux", "CI/CD"],
-    created_at: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    id: "kb-2",
-    candidate_name: "Sanji",
-    title: "AI Fellow",
-    company: "Logpoint",
-    fit_score: 66,
-    status: "active",
-    last_message: "10 mins ago",
-    skills: ["Python", "PyTorch", "NLP"],
-    created_at: new Date(Date.now() - 43200000).toISOString()
-  },
-  {
-    id: "kb-3",
-    candidate_name: "Zoro",
-    title: "Backend Engineer",
-    company: "TechCorp",
-    fit_score: 85,
-    status: "scheduled",
-    meeting_time: "Friday, May 22 at 02:00 PM UTC",
-    skills: ["Go", "PostgreSQL", "gRPC"],
-    created_at: new Date(Date.now() - 172800000).toISOString()
-  },
-  {
-    id: "kb-4",
-    candidate_name: "Nami",
-    title: "Frontend Intern",
-    company: "WebFlow",
-    fit_score: 80,
-    status: "matched",
-    salary: "$14,000",
-    skills: ["React", "CSS", "Tailwind"],
-    created_at: new Date(Date.now() - 259200000).toISOString()
-  },
-  {
-    id: "kb-5",
-    candidate_name: "Usopp",
-    title: "QA Tester",
-    company: "GameCo",
-    fit_score: 45,
-    status: "rejected",
-    reason: "Rejected",
-    skills: ["Selenium", "Jest", "Cypress"],
-    created_at: new Date(Date.now() - 345600000).toISOString()
-  },
-  {
-    id: "kb-6",
-    candidate_name: "Chopper",
-    title: "Data Intern",
-    company: "BioMed",
-    fit_score: 70,
-    status: "active",
-    action_label: "Manual Takeover",
-    is_paused: true,
-    skills: ["Python", "Pandas", "SQL"],
-    created_at: new Date(Date.now() - 129600000).toISOString()
-  }
-];
+export const mockKanbanData: Array<{
+  id: string;
+  candidate_name: string;
+  title: string;
+  company: string;
+  fit_score: number;
+  status: string;
+  action_label?: string;
+  skills: string[];
+  created_at: string;
+  last_message?: string;
+  meeting_time?: string;
+  salary?: string;
+  reason?: string;
+  is_paused?: boolean;
+}> = [];
 
-export const mockMessages = [
-  { id: "m1", sender_role: "recruiter" as const, content: "Hi — we've reviewed your profile. Senior Backend role, Series A, 12 engineers. Fully remote. Band: $85k–$105k. Worth a deeper look?", created_at: new Date(Date.now() - 60000).toISOString() },
-  { id: "m2", sender_role: "candidate" as const, content: "Remote: confirmed. Salary: looking at $95k–$110k. 3yrs Python verified on GitHub. Start: Aug 2026. Good alignment.", created_at: new Date(Date.now() - 45000).toISOString() },
-  { id: "m3", sender_role: "recruiter" as const, content: "We can work in that range. One thing to flag: Glassdoor mention of crunch during a launch — was one-time, not the norm.", created_at: new Date(Date.now() - 30000).toISOString() },
-  { id: "m4", sender_role: "candidate" as const, content: "Appreciate the honesty — green flag. Strong mutual fit. I'd recommend scheduling a chat.", created_at: new Date(Date.now() - 15000).toISOString() },
-  { id: "m5", sender_role: "system" as const, content: "Fit score calculated: 92%. Both agents agree — proceeding to scheduling phase.", created_at: new Date(Date.now() - 5000).toISOString() },
-  { id: "m6", sender_role: "recruiter" as const, content: "Calendar MCP engaged. Checking mutual slots now.", created_at: new Date().toISOString() },
-];
+export const mockMessages: Array<{
+  id: string;
+  sender_role: "candidate" | "recruiter" | "system";
+  content: string;
+  created_at: string;
+}> = [];
 
-export const mockJobs = [
-  {
-    id: "job-1",
-    company: "Stripe",
-    title: "Senior Backend Engineer",
-    location: "San Francisco, CA",
-    remote_policy: "remote",
-    salary_min: 180000,
-    salary_max: 220000,
-    stack: ["Python", "Go", "PostgreSQL", "Kubernetes"],
-    description: "Build the next generation of payment infrastructure. We're looking for engineers who can design and operate distributed systems at scale.",
-    culture_signals: "4.2 Glassdoor, async-first culture, 4-day work week option, quarterly hackathons",
-    experience_required: "5+ years (3+ flexible for strong candidates)",
-    dealbreaker_flexibility: "Salary flexible for right person, experience less important than ability, timeline flexible",
-    status: "active",
-    fit_score: 91,
-    created_at: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    id: "job-2",
-    company: "Vercel",
-    title: "Platform Engineer",
-    location: "Remote",
-    remote_policy: "remote",
-    salary_min: 160000,
-    salary_max: 200000,
-    stack: ["TypeScript", "React", "Node.js", "AWS"],
-    description: "Help us build the platform that powers the frontend web. Work on edge compute, build infrastructure, and developer tooling.",
-    culture_signals: "Strong open-source culture, dogfooding, written communication-first",
-    experience_required: "4+ years",
-    dealbreaker_flexibility: "Remote-first always, equity-heavy comp, prefer async communication style",
-    status: "active",
-    fit_score: 87,
-    created_at: new Date(Date.now() - 172800000).toISOString(),
-  },
-  {
-    id: "job-3",
-    company: "Linear",
-    title: "Full Stack Engineer",
-    location: "New York, NY",
-    remote_policy: "hybrid",
-    salary_min: 150000,
-    salary_max: 190000,
-    stack: ["TypeScript", "React", "GraphQL", "PostgreSQL"],
-    description: "Build the issue tracking tool that modern teams love. Work across the full stack on performance-critical features.",
-    culture_signals: "Design-led, high craft standards, small team with big impact",
-    experience_required: "3+ years",
-    dealbreaker_flexibility: "Hybrid NYC (Tue-Thu in office), strong product sense valued over years of exp",
-    status: "active",
-    fit_score: 78,
-    created_at: new Date(Date.now() - 259200000).toISOString(),
-  },
-  {
-    id: "job-4",
-    company: "Anthropic",
-    title: "AI Safety Researcher",
-    location: "San Francisco, CA",
-    remote_policy: "onsite",
-    salary_min: 200000,
-    salary_max: 300000,
-    stack: ["Python", "PyTorch", "RLHF", "JAX"],
-    description: "Work on alignment research for frontier AI systems. Contribute to the safety and robustness of large language models.",
-    culture_signals: "Mission-driven, research-first, academic collaboration encouraged",
-    experience_required: "PhD preferred, exceptional candidates without considered",
-    dealbreaker_flexibility: "Onsite SF required, visa sponsorship available, research output > years of exp",
-    status: "active",
-    fit_score: 65,
-    created_at: new Date(Date.now() - 345600000).toISOString(),
-  },
-  {
-    id: "job-5",
-    company: "Figma",
-    title: "Design Infrastructure Engineer",
-    location: "Remote",
-    remote_policy: "remote",
-    salary_min: 170000,
-    salary_max: 210000,
-    stack: ["TypeScript", "WebAssembly", "C++", "Skia"],
-    description: "Build the rendering engine that powers collaborative design. Optimize performance for complex document editing at scale.",
-    culture_signals: "Design-first engineering culture, generous comp, strong remote culture",
-    experience_required: "5+ years systems experience",
-    dealbreaker_flexibility: "Remote US/Canada, deep technical skill valued over management experience",
-    status: "active",
-    fit_score: 82,
-    created_at: new Date(Date.now() - 432000000).toISOString(),
-  },
-  {
-    id: "job-6",
-    company: "Railway",
-    title: "Infrastructure Engineer",
-    location: "Remote",
-    remote_policy: "remote",
-    salary_min: 140000,
-    salary_max: 180000,
-    stack: ["Go", "Rust", "Nix", "Kubernetes"],
-    description: "Build the deployment platform that makes shipping delightful. Work on container orchestration, networking, and developer experience.",
-    culture_signals: "Small team (15 eng), high ownership, flat structure, YC-backed",
-    experience_required: "3+ years",
-    dealbreaker_flexibility: "Fully remote, equity-heavy, prefer generalists over specialists",
-    status: "active",
-    fit_score: 75,
-    created_at: new Date(Date.now() - 518400000).toISOString(),
-  },
-];
+export const mockJobs: Array<{
+  id: string;
+  company: string;
+  title: string;
+  location: string;
+  remote_policy: "remote" | "hybrid" | "onsite";
+  salary_min: number;
+  salary_max: number;
+  stack: string[];
+  description: string;
+  culture_signals: string;
+  experience_required: string;
+  dealbreaker_flexibility: string;
+  status: string;
+  fit_score: number;
+  created_at: string;
+}> = [];
 
 export const mockProfile = {
   id: "mock-profile",
