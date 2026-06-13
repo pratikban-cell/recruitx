@@ -27,12 +27,12 @@ function loadEnv() {
 const env = loadEnv();
 const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-// Get Deepgram API Key from environment or fallback file
-const deepgramApiKey = process.env.DEEPGRAM_API_KEY || env.DEEPGRAM_API_KEY;
+// Get Deepgram API Key from environment, .env.local, or direct fallback
+const deepgramApiKey = process.env.DEEPGRAM_API_KEY || env.DEEPGRAM_API_KEY || "28f86de5838375a5c95fb1ba60954c4f477399a2";
 
-// Parse optional Agent ID from command line arguments, defaulting to the provided config ID
+// Parse optional Agent ID from command line arguments, defaulting to null
 const args = process.argv.slice(2);
-let agentId = "28f86de5838375a5c95fb1ba60954c4f477399a2"; // Default Reusable Agent Config ID
+let agentId = null; // Default Reusable Agent Config ID is null (uses inline configuration)
 
 for (let i = 0; i < args.length; i++) {
   if (args[i] === '--agent-id' && args[i + 1]) {
