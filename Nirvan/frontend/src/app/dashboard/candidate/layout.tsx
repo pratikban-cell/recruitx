@@ -52,9 +52,9 @@ export default function CandidateLayout({ children }: { children: React.ReactNod
   const title = pageTitles[pathname] || "Overview";
 
   return (
-    <div className="min-h-screen bg-subtle">
+    <div className="min-h-screen bg-subtle relative pt-16">
       <Sidebar userName={profile?.name} onLogout={handleLogout} />
-      <div className="pl-64">
+      <div className="pl-32">
         <TopBar title={title} />
         <main className="p-8">{children}</main>
       </div>

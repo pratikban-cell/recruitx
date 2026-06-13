@@ -218,7 +218,7 @@ export default function CandidatePrepRoom() {
             <div className="flex-1 overflow-y-auto p-5 space-y-3.5">
               {chatMessages.length === 0 ? (
                 <div className="text-center text-xs text-muted py-12">
-                  Ask Coach Nirvan anything about the deal strategy or live interview tactics.
+                  Ask Coach recruitx anything about the deal strategy or live interview tactics.
                 </div>
               ) : (
                 chatMessages.map((m, idx) => (
@@ -243,7 +243,7 @@ export default function CandidatePrepRoom() {
                       <span className="h-1.5 w-1.5 rounded-full bg-muted animate-bounce" style={{ animationDelay: "150ms" }} />
                       <span className="h-1.5 w-1.5 rounded-full bg-muted animate-bounce" style={{ animationDelay: "300ms" }} />
                     </div>
-                    Coach Nirvan is thinking...
+                    Coach recruitx is thinking...
                   </div>
                 </div>
               )}
@@ -253,7 +253,7 @@ export default function CandidatePrepRoom() {
             <div className="border-t border-card-border p-3 bg-gray-50/50 flex gap-2">
               <input
                 type="text"
-                placeholder="Ask Coach Nirvan..."
+                placeholder="Ask Coach recruitx..."
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}

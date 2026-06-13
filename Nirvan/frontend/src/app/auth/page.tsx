@@ -84,7 +84,7 @@ export default function AuthPage() {
         <div className="rounded-2xl border border-card-border bg-white p-8 shadow-card">
           <div className="mb-8 text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-gradient shadow-sm">
-              <span className="text-lg font-bold text-white">A</span>
+              <span className="text-lg font-bold text-white">H</span>
             </div>
             <h1 className="text-2xl font-bold text-foreground">
               {mode === "login" ? "Welcome back" : "Create your account"}
@@ -209,7 +209,7 @@ export default function AuthPage() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            Sign in with Google
+            {mode === "login" ? "Sign in with Google" : "Sign up with Google"}
           </button>
 
           <p className="mt-6 text-center text-sm text-muted">

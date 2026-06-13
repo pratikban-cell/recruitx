@@ -478,7 +478,7 @@ export default function CandidateSettings() {
     );
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl mx-auto">
       <form onSubmit={handleSave} className="space-y-6">
         {error && (
           <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm animate-fade-in">
@@ -668,7 +668,7 @@ export default function CandidateSettings() {
               ) : (
                 <div className="space-y-2">
                   <p className="text-[11px] text-muted">
-                    Authorize Nirvana to read your public and private repo metadata directly from the GitHub API.
+                    Authorize recruitx to read your public and private repo metadata directly from the GitHub API.
                   </p>
                   <button
                     type="button"
