@@ -459,7 +459,7 @@ async def get_candidate_rejection_insights(
     - Remote Preference: {cand.get("remote_pref")}
     - Skills: {cand.get("skills")}
     - GitHub Verified: {bool(cand.get("github_url"))}
-    - Human Expert Verified: {cand.get("salary_min", 0) >= 100000} (Senior)
+    - Human Expert Verified: {(cand.get("salary_min") or 0) >= 100000} (Senior)
     - Availability / Notice Period: {cand.get("availability")}
     
     Rejection data across {len(rejections)} recent negotiations:
