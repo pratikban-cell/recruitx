@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 from typing import Literal
 
 # ── A2A message types for recruitx negotiation ──────────
@@ -153,7 +153,7 @@ def any_dealbreaker_triggered(input: FitScoreInput) -> bool:
 def _compute_skill_overlap(
     verified_skills: dict, requirements: dict
 ) -> float:
-    """Simple ratio of required skills found in verified skills."""
+    """Compute ratio of required skills found in verified skills, with a baseline boost."""
     if not requirements:
         return 1.0
     required = set(requirements.keys()) if isinstance(
@@ -163,7 +163,11 @@ def _compute_skill_overlap(
         return 1.0
     verified = set(verified_skills.keys())
     matched = required & verified
-    return len(matched) / len(required)
+    if not matched:
+        return 0.0
+    # Non-linear boost so matching some skills gives a higher baseline score
+    ratio = len(matched) / len(required)
+    return 0.6 + 0.4 * ratio
 
 
 def _compute_salary_overlap(
@@ -172,26 +176,33 @@ def _compute_salary_overlap(
     recruiter_ceiling: int | None,
     recruiter_budget: int | None,
 ) -> float:
-    """Ratio of overlap between candidate range and recruiter range."""
+    """Assess salary compatibility based on candidate minimum and recruiter budget/ceiling."""
     low = candidate_min or 0
     high = recruiter_ceiling or recruiter_budget or 0
-    if high <= 0 or low >= high:
+    if high <= 0 or (low > high and high > 0):
         return 0.0
-    cand_max = candidate_target or low + 100000
-    rec_min = recruiter_budget or 0
-    overlap = max(0, min(cand_max, high) - max(low, rec_min))
-    range_span = max(cand_max - low, high - rec_min, 1)
-    return overlap / range_span
+        
+    budget = recruiter_budget or int(high * 0.8)
+    if low <= budget:
+        return 1.0
+    else:
+        # Candidate's minimum is between the budget and the ceiling
+        span = high - budget
+        if span <= 0:
+            return 1.0
+        pct = (low - budget) / span
+        return round(1.0 - pct * 0.25, 3) # Returns between 0.75 and 1.0
 
 
 def _compute_priority_alignment(
     candidate_priorities: list[str], recruiter_signals: list[str]
 ) -> float:
-    """Simple alignment score based on shared keywords."""
+    """Simple alignment score based on shared keywords with a high baseline."""
     if not candidate_priorities or not recruiter_signals:
-        return 0.5
+        return 0.8
     combined = " ".join(candidate_priorities).lower()
     matches = sum(
         1 for s in recruiter_signals if s.lower() in combined
     )
-    return min(matches / len(candidate_priorities), 1.0)
+    ratio = matches / len(recruiter_signals) if recruiter_signals else 1.0
+    return 0.6 + 0.4 * min(ratio, 1.0)

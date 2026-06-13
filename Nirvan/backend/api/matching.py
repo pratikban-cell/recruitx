@@ -125,10 +125,10 @@ def calculate_dynamic_fit_score(cand: dict, job: dict) -> float:
     
     matched_skills = [s for s in job_stack if s in cand_skills]
     skill_ratio = len(matched_skills) / len(job_stack) if job_stack else 1.0
-    github_score = 0.5 + 0.5 * skill_ratio
+    github_score = 0.6 + 0.4 * skill_ratio
     
-    human_verification_score = 0.90 if has_human_verification else 0.0
-    conversational_score = 0.85
+    human_verification_score = 0.95 if has_human_verification else 0.75
+    conversational_score = 0.90
     
     if has_github and has_human_verification:
         weights = {
@@ -169,9 +169,11 @@ def calculate_dynamic_fit_score(cand: dict, job: dict) -> float:
             
     remote_fit = 1.0
     if cand.get("remote_pref") and job.get("remote_policy") != "remote":
-        remote_fit = 0.7
+        remote_fit = 0.75
         
     final_score = score * 0.6 + salary_fit * 0.25 + remote_fit * 0.15
+    # Apply a slight baseline compression boost to prevent scores from dropping too low for standard matches
+    final_score = 0.12 + final_score * 0.88
     return min(round(final_score, 3), 1.0)
 
 
