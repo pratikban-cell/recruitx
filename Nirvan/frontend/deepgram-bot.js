@@ -195,7 +195,8 @@ async function getLatestMeetLink() {
       }
     } else {
       // Binary data containing the linear16 PCM agent audio from Deepgram
-      const pcmBuffer = Buffer.from(event.data);
+      const arrayBuffer = await event.data.arrayBuffer();
+      const pcmBuffer = Buffer.from(arrayBuffer);
       await page.evaluate((base64Audio) => {
         if (window.playBotAudio) {
           window.playBotAudio(base64Audio);
