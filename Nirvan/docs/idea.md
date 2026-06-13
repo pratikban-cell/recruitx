@@ -1,6 +1,6 @@
-# 🚀 Nirvan: Core Product Concept & Agentic Blueprint
+﻿# 🚀 recruitx: Core Product Concept & Agentic Blueprint
 
-This document serves as the absolute source of truth for **Nirvan**, the Autonomous Agent-to-Agent (A2A) hiring marketplace. It contains a detailed product overview, system architecture, database schema, LangGraph agent specifications, API reference, and a comprehensive developer handoff guide designed for both human engineers and AI coding agents to replicate, debug, or extend the platform.
+This document serves as the absolute source of truth for **recruitx**, the Autonomous Agent-to-Agent (A2A) hiring marketplace. It contains a detailed product overview, system architecture, database schema, LangGraph agent specifications, API reference, and a comprehensive developer handoff guide designed for both human engineers and AI coding agents to replicate, debug, or extend the platform.
 
 ---
 
@@ -9,7 +9,7 @@ This document serves as the absolute source of truth for **Nirvan**, the Autonom
 ### A. The Core Hypothesis
 Traditional recruitment is broken. Recruiters suffer from inbox spam, while candidates face endless application forms and "black hole" candidate tracking systems (ATS). The most significant waste of time happens when critical misalignments (e.g., base salary expectations, equity demands, hybrid/remote schedules, start dates) are only discovered **after** 4–5 rounds of interviews.
 
-**Nirvan replaces manual sourcing with autonomous sandbox negotiation.**
+**recruitx replaces manual sourcing with autonomous sandbox negotiation.**
 
 Instead of human-to-human early screening, candidates and recruiters deploy specialized **AI Agent Representatives** to coordinate terms, make offers/counter-offers, verify alignment, compromise on constraints, and schedule interviews. Humans are kept in-the-loop via steering controls and real-time dashboard notifications.
 
@@ -491,15 +491,15 @@ Next.js Proxy intercepts routing paths and extracts user metadata from the Supab
 * Recruiters attempting to load `/dashboard/candidate/*` are redirected to `/dashboard/recruiter`.
 
 ### B. Core UI Components Mappings
-* [**`KanbanBoard.tsx`**](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/frontend/src/components/dashboard/recruiter/KanbanBoard.tsx): Renders recruiter columns. Listens for `data.type === "STATUS_TRANSITION"` via the WebSocket manager to dynamically slide candidate cards across columns without page reloads.
-* [**`PlaybackDrawer.tsx`**](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/frontend/src/components/dashboard/recruiter/PlaybackDrawer.tsx): A sliding side-sheet containing the live message feeds, pause/resume takeover buttons, and the steering panel.
-* [**`SteeringDock.tsx`**](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/frontend/src/components/dashboard/recruiter/SteeringDock.tsx): Renders custom guidance text fields, quick-action adjustment chips (e.g. `+$5k Budget`, `Demand Equity`), and triggers the POST `/steer` API.
+* [**`KanbanBoard.tsx`**](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/frontend/src/components/dashboard/recruiter/KanbanBoard.tsx): Renders recruiter columns. Listens for `data.type === "STATUS_TRANSITION"` via the WebSocket manager to dynamically slide candidate cards across columns without page reloads.
+* [**`PlaybackDrawer.tsx`**](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/frontend/src/components/dashboard/recruiter/PlaybackDrawer.tsx): A sliding side-sheet containing the live message feeds, pause/resume takeover buttons, and the steering panel.
+* [**`SteeringDock.tsx`**](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/frontend/src/components/dashboard/recruiter/SteeringDock.tsx): Renders custom guidance text fields, quick-action adjustment chips (e.g. `+$5k Budget`, `Demand Equity`), and triggers the POST `/steer` API.
 
 ---
 
 ## 7. AI Coding Agent Task & Replication List
 
-Follow this step-by-step checklist to replicate or extend the Nirvan engine:
+Follow this step-by-step checklist to replicate or extend the recruitx engine:
 
 - `[ ]` **Step 1: Database Setup**
   - Execute SQL schemas for base tables, calendar OAuth, and relational config tables.
@@ -521,7 +521,7 @@ Follow this step-by-step checklist to replicate or extend the Nirvan engine:
 
 ## 8. Strategic Backlog & Complementary Features
 
-An AI agent working on expanding Nirvan should focus on these premium enhancements:
+An AI agent working on expanding recruitx should focus on these premium enhancements:
 
 ### A. Game-Theoretic Utility Engines
 * **Description**: Instead of pure qualitative prompt instructions, represent candidate and recruiter preferences as mathematical utility formulas. This turns negotiation into a mathematical search for Pareto-optimal compromises.

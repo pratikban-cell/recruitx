@@ -1,6 +1,6 @@
-# Nirvan Architecture & Feature Roadmap: Future Implementation Plan
+﻿# recruitx Architecture & Feature Roadmap: Future Implementation Plan
 
-This document serves as a strict technical blueprint and future architectural roadmap for **Nirvan**. It captures the specifications for the real-time human-in-the-loop steering controls, as well as step-by-step pathways to resolve the five core architectural, security, and design critiques identified in our latest code audit.
+This document serves as a strict technical blueprint and future architectural roadmap for **recruitx**. It captures the specifications for the real-time human-in-the-loop steering controls, as well as step-by-step pathways to resolve the five core architectural, security, and design critiques identified in our latest code audit.
 
 ---
 

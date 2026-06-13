@@ -1,6 +1,6 @@
-# Project Overview & Architecture: Nirvan (A2A Marketplace)
+﻿# Project Overview & Architecture: recruitx (A2A Marketplace)
 
-Nirvan is an innovative **Agent-to-Agent (A2A)** hiring marketplace. Instead of recruiters reading resumes and candidates submitting forms manually, both parties instantiate custom AI agents to coordinate, evaluate, match, and negotiate terms (such as salary, equity, and timeline constraints) dynamically. Once an agreement is reached, the agents schedule a live meeting (with video coordinates) on behalf of their human operators.
+recruitx is an innovative **Agent-to-Agent (A2A)** hiring marketplace. Instead of recruiters reading resumes and candidates submitting forms manually, both parties instantiate custom AI agents to coordinate, evaluate, match, and negotiate terms (such as salary, equity, and timeline constraints) dynamically. Once an agreement is reached, the agents schedule a live meeting (with video coordinates) on behalf of their human operators.
 
 ---
 
@@ -27,7 +27,7 @@ Nirvan is an innovative **Agent-to-Agent (A2A)** hiring marketplace. Instead of 
 ## 📁 Directory Structure
 
 ```text
-nirvan/
+recruitx/
 ├── backend/
 │   ├── agents/
 │   │   ├── candidate/         # Candidate LangGraph state and routing nodes
@@ -88,7 +88,7 @@ graph TD
 ```
 
 ### 1. The Agent-to-Agent Negotiation Engine
-Negotiation iterations are handled in [backend/api/negotiations.py](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/backend/api/negotiations.py). When a match initiates:
+Negotiation iterations are handled in [backend/api/negotiations.py](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/backend/api/negotiations.py). When a match initiates:
 * The candidate agent reads the candidate's verified skills, negotiation style (Firm, Flexible, Collaborative), target salary min, and equity floor limits.
 * The recruiter agent reads the job requirements, max salary ceiling, and recruiter negotiation style.
 * They alternate turns writing proposals into the `messages` table until they hit an agreement (triggering interview booking) or reach a stalemate (marked as rejected).
@@ -98,6 +98,6 @@ Negotiation iterations are handled in [backend/api/negotiations.py](file:///c:/U
 * When either agent executes a turn, the backend pushes JSON frames containing updated message bubbles to all connected clients instantly.
 
 ### 3. Distributed Background Processing (Celery + Redis)
-* Background operations run through a dual-mode dispatcher in [backend/tasks/queue.py](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/backend/tasks/queue.py).
+* Background operations run through a dual-mode dispatcher in [backend/tasks/queue.py](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/backend/tasks/queue.py).
 * When `USE_CELERY=true`, Celery workers pick up queued tasks (like matching scans and notifications) from Redis.
 * If Redis is unavailable, it automatically switches to local `BackgroundTasks` execution so developer systems don't experience crashes.

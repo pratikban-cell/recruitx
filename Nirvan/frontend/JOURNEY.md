@@ -1,8 +1,8 @@
-# Nirvan — Build Journey
+﻿# recruitx — Build Journey
 
 ## Overview
 
-**Nirvan** is an Agent-to-Agent (A2A) hiring platform. AI agents negotiate on behalf of candidates and recruiters — screening, salary discussion, dealbreaker checks, and booking — so humans only meet when fit is confirmed.
+**recruitx** is an Agent-to-Agent (A2A) hiring platform. AI agents negotiate on behalf of candidates and recruiters — screening, salary discussion, dealbreaker checks, and booking — so humans only meet when fit is confirmed.
 
 ---
 
@@ -152,7 +152,7 @@ backend/
 ## Project Structure (Current)
 
 ```
-nirvan/
+recruitx/
 ├── frontend/
 │   ├── src/
 │   │   ├── app/              # Next.js pages (landing, auth, jobs, dashboards)

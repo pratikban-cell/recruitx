@@ -1,4 +1,4 @@
-# 🚀 NIRVAN: The Autonomous Agent-to-Agent (A2A) Talent Marketplace
+﻿# 🚀 recruitx: The Autonomous Agent-to-Agent (A2A) Talent Marketplace
 
 ```text
     _                     _ _ 
@@ -20,9 +20,9 @@
 2. **The Late-Stage Alignment Gap**: Critical discrepancies in salary expectations, equity floor requirements, remote/hybrid policies, and start dates are often only discovered *after* 3–4 rounds of interviews, wasting dozens of human hours.
 3. **Ghosting & Scheduling Friction**: Coordinate calendars, scheduling phone screens, and handling back-and-forth compensation negotiation is highly repetitive, emotionally taxing, and slows down hiring velocities.
 
-### The Solution: Nirvan (Autonomous A2A Negotiation)
-Nirvan is the world’s first **Agent-to-Agent (A2A) hiring marketplace**. Instead of manual resume reviews and form submissions:
-* **The Candidate Profile Agent**: Candidates upload a PDF resume. Nirvan parses it instantly and instantiates a candidate agent configured with the candidate's exact reservation wages, remote preferences, equity thresholds, and negotiation style (e.g., Collaborative, Firm, Flexible).
+### The Solution: recruitx (Autonomous A2A Negotiation)
+recruitx is the world’s first **Agent-to-Agent (A2A) hiring marketplace**. Instead of manual resume reviews and form submissions:
+* **The Candidate Profile Agent**: Candidates upload a PDF resume. recruitx parses it instantly and instantiates a candidate agent configured with the candidate's exact reservation wages, remote preferences, equity thresholds, and negotiation style (e.g., Collaborative, Firm, Flexible).
 * **The Recruiter Agent**: Recruiters create job postings defining must-haves, dealbreakers, and maximum budget flex thresholds.
 * **The Negotiation Ring**: The candidate and recruiter agents enter a secure sandbox to negotiate terms dynamically.
 * **Consensus & Booking**: Once a consensus is reached, the system automatically schedules a Google Meet interview, creates Google Calendar events, and sends transactional email alerts.
@@ -32,7 +32,7 @@ Nirvan is the world’s first **Agent-to-Agent (A2A) hiring marketplace**. Inste
 
 ## 🏗️ System Architecture & Data Flows
 
-Nirvan is built using a modern Next.js (TypeScript) client and a FastAPI (Python) backend, supported by LangGraph agent workflows, a Supabase PostgreSQL database, and background processing systems.
+recruitx is built using a modern Next.js (TypeScript) client and a FastAPI (Python) backend, supported by LangGraph agent workflows, a Supabase PostgreSQL database, and background processing systems.
 
 ### High-Level Data Flow
 
@@ -82,12 +82,12 @@ To stand out in a competitive AI/ML track, we avoided simple sequential prompt w
 
 ### 1. Stateful Multi-Agent graphs (LangGraph)
 We model both the recruiter and candidate negotiation behaviors using specialized graph nodes.
-* **Recruiter Graph**: [recruiter/graph.py](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/backend/agents/recruiter/graph.py) reads job requirements, maximum budget ceiling, and negotiation style. It uses this state to calculate concessions.
-* **Candidate Graph**: [candidate/graph.py](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/backend/agents/candidate/graph.py) reads candidate skills, minimum target salary, and equity boundaries.
+* **Recruiter Graph**: [recruiter/graph.py](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/backend/agents/recruiter/graph.py) reads job requirements, maximum budget ceiling, and negotiation style. It uses this state to calculate concessions.
+* **Candidate Graph**: [candidate/graph.py](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/backend/agents/candidate/graph.py) reads candidate skills, minimum target salary, and equity boundaries.
 * The state is stored in the database and passed back and forth, allowing the agents to "remember" previous concessions and adjust their bargaining strategy on each turn.
 
 ### 2. Schema-Enforced Structured Outputs (Pydantic)
-Rather than relying on fragile regex scanning or splitting strings to look for tags (e.g. `[AGREED]` or `[IMPASSE]`), Nirvan implements strict schema control using OpenAI's Structured Outputs (`client.beta.chat.completions.parse`):
+Rather than relying on fragile regex scanning or splitting strings to look for tags (e.g. `[AGREED]` or `[IMPASSE]`), recruitx implements strict schema control using OpenAI's Structured Outputs (`client.beta.chat.completions.parse`):
 
 ```python
 class AgentTurnSchema(BaseModel):
@@ -101,7 +101,7 @@ The LLM parses the completion directly into this schema, ensuring that state sig
 
 ### 3. Real-Time Human-in-the-Loop Steering (Agent Co-Pilot)
 We built an **Agent Steering Dock** allowing human operators to guide their agents mid-negotiation.
-* **The Endpoint**: `POST /api/negotiations/{negotiation_id}/steer` in [negotiations.py](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/backend/api/negotiations.py) takes tactical updates.
+* **The Endpoint**: `POST /api/negotiations/{negotiation_id}/steer` in [negotiations.py](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/backend/api/negotiations.py) takes tactical updates.
 * **Prompt Injection**: The active instruction (e.g., *"Accept the current salary but demand more equity"* or *"Budget increased, offer $5k more"*) is fetched and injected dynamically into the system prompt:
   ```text
   🚨 IMPORTANT REAL-TIME TACTICAL CO-PILOT INSTRUCTION FROM YOUR REPRESENTED HUMAN:
@@ -111,7 +111,7 @@ We built an **Agent Steering Dock** allowing human operators to guide their agen
 * **Real-time Trigger**: Once steering is submitted, the backend inserts the instruction, sends a system alert via WebSockets, and immediately re-triggers `run_negotiation_loop` so the agent responds instantly to the new instruction.
 
 ### 4. Consensus Arbitrator & Fit-Score Bypass
-In a naive matchmaking system, low-fit-score applicants are immediately rejected. Nirvan uses a dual-evaluation system:
+In a naive matchmaking system, low-fit-score applicants are immediately rejected. recruitx uses a dual-evaluation system:
 * **Fit-Score Bypass**: Even if the candidate’s static profile matching score is low (e.g., 40% due to minor skill mismatch), if the agents negotiate and find a mutually acceptable compromise (consensus), the static fit-score threshold is completely bypassed, and the interview is successfully scheduled.
 * **Consensus Arbitrator Fallback**: If the agents run out of turns (turn limit exceeded) without outputting the explicit `AGREED` signal but have reached a friendly compromise in text, we run a zero-temperature LLM consensus check to determine if an agreement was made:
   ```python
@@ -130,15 +130,15 @@ Here is a summary of the features fully implemented, tested, and ready for revie
 
 | Feature / Module | Component | Description | Implementation File |
 | :--- | :--- | :--- | :--- |
-| **Edge Route Guards** | Frontend | Proxy inspecting role status via Supabase, guarding `/dashboard/recruiter` and `/dashboard/candidate` paths. | [proxy.ts](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/frontend/src/proxy.ts) |
-| **Interactive Kanban Board** | Frontend | Recruiter Kanban columns (`matching`, `active`, `scheduled`, `rejected`, `completed`) with drag-and-drop state. | [KanbanBoard.tsx](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/frontend/src/components/dashboard/recruiter/KanbanBoard.tsx) |
-| **Agent Steering Dock** | Frontend / Backend | Custom input drawer allowing human recruiters/candidates to type instructions and steer their agents mid-loop. | [SteeringDock.tsx](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/frontend/src/components/dashboard/recruiter/SteeringDock.tsx) |
-| **WebSocket Sync** | Backend / Frontend | FastAPI WebSocket route broadcasting `"STATUS_TRANSITION"` frames to trigger column movement on the client instantly. | [negotiations.py](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/backend/api/negotiations.py) |
-| **Structured LLM outputs** | Backend | OpenAI Pydantic structured output parse calls replacing brittle regex extraction. | [recruiter/graph.py](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/backend/agents/recruiter/graph.py) / [candidate/graph.py](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/backend/agents/candidate/graph.py) |
-| **Resume Parser** | Backend | Extracting structured skills, target title, and salary floor from uploaded PDFs via `pypdf` and GPT-4o-mini. | [candidates.py](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/backend/api/candidates.py) |
-| **Consensus & Bypass** | Backend | zero-temperature arbitration and static fit-score bypass logic when consensus is found. | [negotiations.py](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/backend/api/negotiations.py) |
-| **Async Task Queue** | Backend | Celery + Redis task runner for matching jobs, featuring automatic local `BackgroundTasks` fallback. | [queue.py](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/backend/tasks/queue.py) |
-| **Email Dispatcher** | Backend | Resend API integrations with console fallback formatting for local testing. | [notifications.py](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/backend/api/notifications.py) |
+| **Edge Route Guards** | Frontend | Proxy inspecting role status via Supabase, guarding `/dashboard/recruiter` and `/dashboard/candidate` paths. | [proxy.ts](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/frontend/src/proxy.ts) |
+| **Interactive Kanban Board** | Frontend | Recruiter Kanban columns (`matching`, `active`, `scheduled`, `rejected`, `completed`) with drag-and-drop state. | [KanbanBoard.tsx](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/frontend/src/components/dashboard/recruiter/KanbanBoard.tsx) |
+| **Agent Steering Dock** | Frontend / Backend | Custom input drawer allowing human recruiters/candidates to type instructions and steer their agents mid-loop. | [SteeringDock.tsx](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/frontend/src/components/dashboard/recruiter/SteeringDock.tsx) |
+| **WebSocket Sync** | Backend / Frontend | FastAPI WebSocket route broadcasting `"STATUS_TRANSITION"` frames to trigger column movement on the client instantly. | [negotiations.py](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/backend/api/negotiations.py) |
+| **Structured LLM outputs** | Backend | OpenAI Pydantic structured output parse calls replacing brittle regex extraction. | [recruiter/graph.py](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/backend/agents/recruiter/graph.py) / [candidate/graph.py](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/backend/agents/candidate/graph.py) |
+| **Resume Parser** | Backend | Extracting structured skills, target title, and salary floor from uploaded PDFs via `pypdf` and GPT-4o-mini. | [candidates.py](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/backend/api/candidates.py) |
+| **Consensus & Bypass** | Backend | zero-temperature arbitration and static fit-score bypass logic when consensus is found. | [negotiations.py](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/backend/api/negotiations.py) |
+| **Async Task Queue** | Backend | Celery + Redis task runner for matching jobs, featuring automatic local `BackgroundTasks` fallback. | [queue.py](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/backend/tasks/queue.py) |
+| **Email Dispatcher** | Backend | Resend API integrations with console fallback formatting for local testing. | [notifications.py](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/backend/api/notifications.py) |
 
 ---
 
@@ -156,9 +156,9 @@ Follow these steps to run both backend and frontend development environments:
 
 #### 1. Database Setup
 Execute the following SQL schemas in your Supabase SQL Editor in order:
-1. [supabase-schema.sql](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/frontend/supabase-schema.sql) (Base tables, RLS triggers)
-2. [supabase-schema-calendar.sql](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/frontend/supabase-schema-calendar.sql) (OAuth calendar connector schema)
-3. [supabase-schema-advanced.sql](file:///c:/Users/Viraj/Downloads/Nirvana/Nirvan/frontend/supabase-schema-advanced.sql) (Negotiation styles and boundaries columns)
+1. [supabase-schema.sql](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/frontend/supabase-schema.sql) (Base tables, RLS triggers)
+2. [supabase-schema-calendar.sql](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/frontend/supabase-schema-calendar.sql) (OAuth calendar connector schema)
+3. [supabase-schema-advanced.sql](file:///c:/Users/Viraj/Downloads/Nirvana/recruitx/frontend/supabase-schema-advanced.sql) (Negotiation styles and boundaries columns)
 
 #### 2. Start the Backend API
 In the `backend/` directory:

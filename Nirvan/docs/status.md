@@ -1,6 +1,6 @@
-# Project Status: Nirvan (A2A Marketplace)
+﻿# Project Status: recruitx (A2A Marketplace)
 
-Nirvan is a working hackathon/prototype implementation with a passing production frontend build, compiling backend modules, real unittest discovery, and stricter authenticated API guards. It still needs deeper type cleanup, component decomposition, and production deployment hardening.
+recruitx is a working hackathon/prototype implementation with a passing production frontend build, compiling backend modules, real unittest discovery, and stricter authenticated API guards. It still needs deeper type cleanup, component decomposition, and production deployment hardening.
 
 ## Verified locally
 
@@ -14,7 +14,7 @@ Nirvan is a working hackathon/prototype implementation with a passing production
 
 - **Frontend lint warnings remain**: mostly hook dependency warnings and a few unused variables. The blocking lint errors have been resolved.
 - **Type model is still loose**: `@typescript-eslint/no-explicit-any` is disabled temporarily because the prototype consumes dynamic Supabase/API payloads without generated types.
-- **Directory rename successfully completed**: The workspace directory has been renamed from `arqveil` to `Nirvan`.
+- **Directory rename successfully completed**: The workspace directory has been renamed from `arqveil` to `recruitx`.
 - **Auth & Route Guards QA**: Handled and fixed the authorization bug in the `initiate-negotiation` endpoint. It now correctly allows either the candidate (clicking "Let agent handle this") or the recruiter to initiate negotiations, verifying proper token ownership for either participant.
 - **Calendar/email integrations include mock paths**: Google Calendar and email flows still support mock tokens and test fallback addresses for local development.
 - **Large components need decomposition**: `frontend/src/app/dashboard/recruiter/candidates/page.tsx` is over 1,000 lines, and `backend/api/negotiations.py` is about 800 lines.
@@ -34,7 +34,7 @@ CORS_ALLOW_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 USE_CELERY=false
 REDIS_URL=redis://localhost:6379/0
 RESEND_API_KEY=re_...
-SENDER_EMAIL="Nirvan Marketplace <notifications@your-domain.com>"
+SENDER_EMAIL="recruitx Marketplace <notifications@your-domain.com>"
 TEST_EMAIL_FALLBACK=verified-test@example.com
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...

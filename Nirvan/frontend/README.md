@@ -1,6 +1,6 @@
-# Nirvan Frontend
+﻿# recruitx Frontend
 
-Next.js 16 App Router client for the Nirvan A2A hiring marketplace.
+Next.js 16 App Router client for the recruitx A2A hiring marketplace.
 
 ## Scripts
 

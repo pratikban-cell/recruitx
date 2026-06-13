@@ -1,6 +1,6 @@
-# Future Improvements & Roadmap Ideas
+﻿# Future Improvements & Roadmap Ideas
 
-While the core ecosystem of Nirvan is fully operational, the following ideas represent paths for upgrading the marketplace to a production scale:
+While the core ecosystem of recruitx is fully operational, the following ideas represent paths for upgrading the marketplace to a production scale:
 
 ---
 
@@ -8,7 +8,7 @@ While the core ecosystem of Nirvan is fully operational, the following ideas rep
 
 ### 1. 📧 Production Email Domain Verification
 * **Current State**: Uses Resend API sandbox mode, which logs emails or sends them only to registered account developers.
-* **Next Step**: Add a custom domain (e.g. `domain.com`) in the Resend dashboard, verify DNS MX records, and configure a public sender email address (`hiring@nirvan.com`) to support real email alerts to anyone.
+* **Next Step**: Add a custom domain (e.g. `domain.com`) in the Resend dashboard, verify DNS MX records, and configure a public sender email address (`hiring@recruitx.com`) to support real email alerts to anyone.
 
 ### 2. 📅 Full Google Calendar OAuth Integration
 * **Current State**: Uses a mock calendar connection connector to register calendar credentials locally in settings.
