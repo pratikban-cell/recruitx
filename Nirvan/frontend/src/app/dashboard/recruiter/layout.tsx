@@ -48,8 +48,8 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
         setToasts((prev) => prev.filter((t) => t.id !== newToast.id));
       }, 5000);
     };
-    window.addEventListener("nirvan-toast", handleToast);
-    return () => window.removeEventListener("nirvan-toast", handleToast);
+    window.addEventListener("recruitx-toast", handleToast);
+    return () => window.removeEventListener("recruitx-toast", handleToast);
   }, []);
 
   const handleLogout = async () => {
@@ -66,9 +66,9 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
   const title = pageTitles[pathname] || "Overview";
 
   return (
-    <div className="min-h-screen bg-subtle relative">
+    <div className="min-h-screen bg-subtle relative pt-16">
       <Sidebar isRecruiter userName={profile?.name} onLogout={handleLogout} />
-      <div className="pl-64">
+      <div className="pl-32">
         <TopBar title={title} />
         <main className="p-8">{children}</main>
       </div>

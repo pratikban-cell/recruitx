@@ -12,7 +12,11 @@ type Negotiation = {
   status: string;
   fit_score: number | null;
   created_at: string;
-  candidate: { title: string; salary_min: number }[] | null;
+  candidate: { 
+    title: string; 
+    salary_min: number;
+    profile?: { name: string } | { name: string }[] | null;
+  }[] | null;
 };
 
 // Monthly data mapping initialized with baseline mock values
@@ -39,7 +43,7 @@ export default function RecruiterAnalytics() {
       if (recruiter) {
         const { data: negoData } = await supabase
           .from("negotiations")
-          .select("id, status, fit_score, created_at, candidate:candidates(title, salary_min)")
+          .select("id, status, fit_score, created_at, candidate:candidates(title, salary_min, profile:profiles(name))")
           .eq("recruiter_id", recruiter.id)
           .order("created_at", { ascending: false });
         if (negoData && negoData.length > 0) {
@@ -197,30 +201,35 @@ export default function RecruiterAnalytics() {
             <h2 className="text-sm font-semibold text-foreground">Candidate Fit Scores</h2>
           </div>
           <div className="p-6 space-y-4 max-h-[260px] overflow-y-auto">
-            {negotiations.map((n, i) => (
-              <div key={n.id} className="group">
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs font-semibold text-slate-700 transition-colors group-hover:text-accent">
-                    {n.candidate?.[0]?.title || "Candidate"}
-                  </span>
-                  <span className="text-xs font-bold text-slate-800">{n.fit_score || 0}%</span>
+            {negotiations.map((n, i) => {
+              const candidate = Array.isArray(n.candidate) ? n.candidate[0] : n.candidate;
+              const profile = Array.isArray(candidate?.profile) ? candidate?.profile[0] : candidate?.profile;
+              const candidateName = profile?.name || "Candidate";
+              return (
+                <div key={n.id} className="group">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-semibold text-slate-700 transition-colors group-hover:text-accent">
+                      {candidateName}
+                    </span>
+                    <span className="text-xs font-bold text-slate-800">{n.fit_score || 0}%</span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden relative">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${n.fit_score || 0}%` }}
+                      transition={{ duration: 0.8, delay: i * 0.05, ease: "easeOut" }}
+                      className={`h-full rounded-full ${
+                        (n.fit_score || 0) >= 70
+                          ? "bg-emerald-500"
+                          : (n.fit_score || 0) >= 50
+                          ? "bg-amber-500"
+                          : "bg-rose-500"
+                      }`}
+                    />
+                  </div>
                 </div>
-                <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden relative">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${n.fit_score || 0}%` }}
-                    transition={{ duration: 0.8, delay: i * 0.05, ease: "easeOut" }}
-                    className={`h-full rounded-full ${
-                      (n.fit_score || 0) >= 70
-                        ? "bg-emerald-500"
-                        : (n.fit_score || 0) >= 50
-                        ? "bg-amber-500"
-                        : "bg-rose-500"
-                    }`}
-                  />
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

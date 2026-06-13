@@ -178,141 +178,65 @@ export default function RecruiterCandidates() {
         }
       }
 
-      // Merge DB records with the required mock baseline data perfectly
-      const baseMock = JSON.parse(JSON.stringify(mockKanbanData));
-      const merged = baseMock.map((card: any) => {
-        const match = dbNegos.find((n: any) => {
-          const cand = Array.isArray(n.candidate)
-            ? n.candidate[0]
-            : n.candidate;
-          if (!cand) return false;
+      const merged: any[] = [];
 
-          const dbName = cand.profile?.name;
-          if (
-            dbName &&
-            dbName.toLowerCase() === card.candidate_name.toLowerCase()
-          ) {
-            return true;
-          }
-          const dbTitle = cand.title;
-          if (
-            dbTitle &&
-            dbTitle.toLowerCase().includes(card.title.toLowerCase())
-          ) {
-            return true;
-          }
-          return false;
-        });
-
-        if (match) {
-          const cand = Array.isArray(match.candidate)
-            ? match.candidate[0]
-            : match.candidate;
-          let stage = card.status;
-          const status = match.status;
-          const rNotes = match.recruiter_notes || "";
-          const cNotes = match.candidate_notes || "";
-
-          if (status === "active") {
-            if (
-              rNotes.toLowerCase().includes("sourcing") ||
-              cNotes.toLowerCase().includes("sourcing")
-            ) {
-              stage = "sourcing";
-            } else {
-              stage = "active";
-            }
-          } else if (status === "scheduled") {
-            stage = "scheduled";
-          } else if (status === "matched") {
-            stage = "matched";
-          } else if (status === "completed" || status === "rejected") {
-            stage = "rejected";
-          }
-
-          const isPaused =
-            rNotes.toLowerCase().includes("paused") ||
-            cNotes.toLowerCase().includes("paused");
-
-          let meetingTime = card.meeting_time;
-          if (card.candidate_name === "Zoro" && cNotes) {
-            if (cNotes.includes("|")) {
-              meetingTime = cNotes.split("|")[1] || card.meeting_time;
-            }
-          }
-
-          return {
-            ...card,
-            id: match.id, // Bind real DB negotiation ID!
-            status: stage,
-            fit_score:
-              match.fit_score !== null ? match.fit_score : card.fit_score,
-            is_paused: isPaused,
-            meeting_time: meetingTime,
-            dbRecord: match,
-          };
-        }
-        return card;
-      });
-
-      // Add any dynamic extra records from Supabase that aren't represented in the mock baseline
+      // Add all active negotiations from Supabase to the Kanban board
       dbNegos.forEach((n: any) => {
         const cand = Array.isArray(n.candidate) ? n.candidate[0] : n.candidate;
         if (!cand) return;
 
         const dbName = cand.profile?.name || "Candidate";
-        const isAlreadyMerged = merged.some(
-          (c: any) =>
-            c.id === n.id ||
-            c.candidate_name.toLowerCase() === dbName.toLowerCase(),
-        );
+        
+        let stage = "active";
+        const status = n.status;
+        const rNotes = n.recruiter_notes || "";
+        const cNotes = n.candidate_notes || "";
 
-        if (!isAlreadyMerged) {
-          let stage = "active";
-          const status = n.status;
-          const rNotes = n.recruiter_notes || "";
-          const cNotes = n.candidate_notes || "";
-
-          if (status === "active") {
-            if (
-              rNotes.toLowerCase().includes("sourcing") ||
-              cNotes.toLowerCase().includes("sourcing")
-            ) {
-              stage = "sourcing";
-            } else {
-              stage = "active";
-            }
-          } else if (status === "scheduled") {
-            stage = "scheduled";
-          } else if (status === "matched") {
-            stage = "matched";
-          } else if (status === "completed" || status === "rejected") {
-            stage = "rejected";
+        if (status === "active") {
+          if (
+            rNotes.toLowerCase().includes("sourcing") ||
+            cNotes.toLowerCase().includes("sourcing")
+          ) {
+            stage = "sourcing";
+          } else {
+            stage = "active";
           }
-
-          const isPaused =
-            rNotes.toLowerCase().includes("paused") ||
-            cNotes.toLowerCase().includes("paused");
-
-          merged.push({
-            id: n.id,
-            candidate_name: dbName,
-            title: cand.title || "Software Engineer",
-            company: recruiter?.company || "Partner",
-            fit_score: n.fit_score || 80,
-            status: stage,
-            is_paused: isPaused,
-            skills: cand.skills || [],
-            created_at: n.created_at,
-          });
+        } else if (status === "scheduled") {
+          stage = "scheduled";
+        } else if (status === "matched") {
+          stage = "matched";
+        } else if (status === "completed" || status === "rejected") {
+          stage = "rejected";
         }
+
+        const isPaused =
+          rNotes.toLowerCase().includes("paused") ||
+          cNotes.toLowerCase().includes("paused");
+
+        let meetingTime = null;
+        if (cNotes && cNotes.includes("|")) {
+          meetingTime = cNotes.split("|")[1];
+        }
+
+        merged.push({
+          id: n.id,
+          candidate_name: dbName,
+          title: cand.title || "Software Engineer",
+          company: recruiter?.company || "Partner",
+          fit_score: n.fit_score !== null ? n.fit_score : 80,
+          status: stage,
+          is_paused: isPaused,
+          skills: cand.skills || [],
+          created_at: n.created_at,
+          meeting_time: meetingTime,
+          dbRecord: n,
+        });
       });
 
       setKanbanCards(merged);
     } catch (err) {
       console.error("Error loading pipeline:", err);
-      // Fallback perfectly to mockKanbanData so the dashboard never crashes
-      setKanbanCards(mockKanbanData);
+      setKanbanCards([]);
     }
     setLoading(false);
   };
@@ -325,70 +249,7 @@ export default function RecruiterCandidates() {
     return () => window.clearTimeout(timer);
   }, []);
 
-  // Real-Time Zoro Negotiation Simulation & Card Shifting
-  useEffect(() => {
-    if (loading || kanbanCards.length === 0) return;
 
-    const initialTimer = setTimeout(() => {
-      setKanbanCards((prev) =>
-        prev.map((card) => {
-          if (card.candidate_name === "Zoro" && card.status === "scheduled") {
-            return {
-              ...card,
-              status: "active",
-              last_message: "Negotiating budget...",
-            };
-          }
-          return card;
-        }),
-      );
-    }, 0);
-
-    const timer1 = setTimeout(() => {
-      window.dispatchEvent(
-        new CustomEvent("nirvan-toast", {
-          detail: {
-            message:
-              "🤖 Zoro's Agent: Go and gRPC verification completed. Aligning on remote terms...",
-            type: "update",
-          },
-        }),
-      );
-    }, 4500);
-
-    const timer2 = setTimeout(() => {
-      window.dispatchEvent(
-        new CustomEvent("nirvan-toast", {
-          detail: {
-            message:
-              "🤝 Agreement Reached: Zoro & TechCorp! Auto-scheduling interview and setting up Google Meet.",
-            type: "success",
-          },
-        }),
-      );
-
-      // Optimistically animate the card shifting smoothly
-      setKanbanCards((prev) =>
-        prev.map((card) => {
-          if (card.candidate_name === "Zoro") {
-            return {
-              ...card,
-              status: "scheduled",
-              meeting_time: "Friday, May 22 at 02:00 PM UTC",
-              last_message: "Interview Scheduled!",
-            };
-          }
-          return card;
-        }),
-      );
-    }, 9500);
-
-    return () => {
-      clearTimeout(initialTimer);
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-    };
-  }, [loading]);
 
   useEffect(() => {
     if (!selectedCardForDrawer) return;

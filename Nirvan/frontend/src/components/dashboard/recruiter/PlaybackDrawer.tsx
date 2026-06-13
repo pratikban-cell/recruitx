@@ -402,18 +402,12 @@ export default function PlaybackDrawer({
                           }`}
                         >
                           <div className="flex items-center gap-1.5 px-1.5">
-                            <span
-                              className={`text-[9px] font-bold uppercase tracking-wider ${
-                                isRecruiter
-                                  ? "text-blue-600"
-                                  : "text-purple-600"
-                              }`}
-                            >
+                            <span className="text-[9px] font-semibold uppercase tracking-wider text-foreground/75">
                               {isRecruiter
                                 ? `${selectedCard.company} Agent`
                                 : `${selectedCard.candidate_name}'s Agent`}
                             </span>
-                            <span className="text-[8px] text-slate-400">
+                            <span className="text-[8px] text-muted/80">
                               {msg.created_at
                                 ? new Date(msg.created_at).toLocaleTimeString(
                                     [],
@@ -422,12 +416,12 @@ export default function PlaybackDrawer({
                                 : "Now"}
                             </span>
                           </div>
-
+ 
                           <div
-                            className={`p-3.5 text-xs text-slate-800 leading-relaxed shadow-sm rounded-2xl max-w-[85%] border transition-all ${
+                            className={`p-3 text-xs text-foreground leading-relaxed rounded-2xl max-w-[85%] border transition-all ${
                               isRecruiter
-                                ? "bg-blue-50/90 border-blue-100 rounded-tr-none hover:bg-blue-50"
-                                : "bg-purple-50/90 border-purple-100 rounded-tl-none hover:bg-purple-50"
+                                ? "bg-subtle border-card-border rounded-tr-none hover:bg-subtle/80"
+                                : "bg-card border-card-border rounded-tl-none hover:bg-subtle/20 shadow-sm"
                             }`}
                           >
                             {msg.content.includes("[AGREED]") ||
@@ -591,12 +585,12 @@ export default function PlaybackDrawer({
                   <p className="text-xs text-muted">Generating customized questions...</p>
                 </div>
               ) : !activeKit ? (
-                <div className="text-center py-20 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+                <div className="text-center py-20 border border-dashed border-card-border rounded-xl bg-subtle/50">
                   <p className="text-xs text-slate-500 font-medium">Interview kit not available for this stage.</p>
                 </div>
               ) : (
                 <div className="space-y-5">
-                  <div className="rounded-2xl border border-amber-100 bg-amber-50/20 p-5 shadow-sm space-y-2">
+                  <div className="rounded-2xl border border-amber-200 bg-amber-50/10 p-5 shadow-sm space-y-2">
                     <h3 className="text-xs font-bold text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
                       🔍 Recommended Probe Areas
                     </h3>
@@ -605,7 +599,7 @@ export default function PlaybackDrawer({
                     </p>
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {activeKit.unverified_skills_probe?.map((skill: string, i: number) => (
-                        <span key={i} className="text-[10px] bg-amber-100/60 text-amber-800 font-bold px-2 py-0.5 rounded border border-amber-200/50">
+                        <span key={i} className="text-[10px] bg-amber-100/50 text-amber-800 font-bold px-2 py-0.5 rounded border border-amber-200/50">
                           {skill}
                         </span>
                       ))}
@@ -613,34 +607,34 @@ export default function PlaybackDrawer({
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    <h3 className="text-xs font-bold text-foreground/80 uppercase tracking-wider">
                       📋 Custom Technical Questions
                     </h3>
                     
                     <div className="space-y-4">
                       {activeKit.interview_questions?.map((q: any, i: number) => (
-                        <div key={i} className="rounded-xl border border-card-border bg-white p-5 shadow-sm space-y-3">
+                        <div key={i} className="rounded-xl border border-card-border bg-card p-5 shadow-card space-y-3">
                           <div className="flex items-center gap-2">
-                            <span className="h-5 w-5 rounded-full bg-accent/10 text-accent flex items-center justify-center text-[10px] font-bold shrink-0">
+                            <span className="h-5 w-5 rounded-full bg-accent/10 text-foreground flex items-center justify-center text-[10px] font-bold shrink-0">
                               {i + 1}
                             </span>
-                            <h4 className="text-xs font-bold text-slate-800">
+                            <h4 className="text-xs font-bold text-foreground">
                               {q.question}
                             </h4>
                           </div>
                           
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
-                            <div className="rounded-lg bg-green-50/40 border border-green-100 p-3 text-[11px] space-y-1">
+                            <div className="rounded-lg bg-green-50/20 border border-green-100 p-3 text-[11px] space-y-1">
                               <span className="font-bold text-green-700 block">🟢 Expected Signals:</span>
                               <span className="text-slate-600 leading-relaxed block">{q.expected_signals}</span>
                             </div>
-                            <div className="rounded-lg bg-red-50/40 border border-red-100 p-3 text-[11px] space-y-1">
+                            <div className="rounded-lg bg-red-50/20 border border-red-100 p-3 text-[11px] space-y-1">
                               <span className="font-bold text-red-700 block">🔴 Weak Signals / Flags:</span>
                               <span className="text-slate-600 leading-relaxed block">{q.weak_signals}</span>
                             </div>
                           </div>
 
-                          <div className="border-t border-slate-50 pt-2.5 text-[11px] text-muted flex items-start gap-1.5">
+                          <div className="border-t border-card-border pt-2.5 text-[11px] text-muted flex items-start gap-1.5">
                             <span className="font-semibold text-accent shrink-0">🔎 Probe:</span>
                             <span>{q.suggested_follow_up}</span>
                           </div>
@@ -655,21 +649,21 @@ export default function PlaybackDrawer({
         </div>
 
         {/* Drawer Footer Actions */}
-        <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+        <div className="p-4 bg-subtle border-t border-card-border flex items-center justify-between">
           <span className="text-[10px] text-muted font-mono">
             Audit Log SHA-256: f4b8...e9a2
           </span>
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
+              className="rounded-lg border border-card-border bg-card px-4 py-2 text-xs font-semibold text-foreground hover:bg-subtle transition-all shadow-sm"
             >
               Close
             </button>
             <Link
               href={isMock ? "#" : `/negotiations/${selectedCard.id}`}
               onClick={onClose}
-              className="rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white hover:bg-accent-dark transition-all shadow-sm"
+              className="rounded-lg bg-accent px-4 py-2 text-xs font-semibold text-white hover:bg-accent/90 transition-all shadow-sm"
             >
               {isMock ? "Unlock Audit Trail" : "Open Full Match Room"}
             </Link>

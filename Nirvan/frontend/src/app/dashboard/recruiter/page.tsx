@@ -13,7 +13,12 @@ type Negotiation = {
   status: string;
   fit_score: number | null;
   created_at: string;
-  candidate: { title: string; skills: string[]; salary_min: number }[] | null;
+  candidate: {
+    title: string;
+    skills: string[];
+    salary_min: number;
+    profile?: any;
+  }[] | null;
 };
 
 const statusColor: Record<string, string> = {
@@ -80,7 +85,7 @@ export default function RecruiterOverview() {
       }
     };
     
-    window.addEventListener("nirvan-toast", handleActivity);
+    window.addEventListener("recruitx-toast", handleActivity);
     
     // Simulating background match events to make the dashboard feel actively negotiated
     const simulations = [
@@ -100,7 +105,7 @@ export default function RecruiterOverview() {
     }, 15000);
 
     return () => {
-      window.removeEventListener("nirvan-toast", handleActivity);
+      window.removeEventListener("recruitx-toast", handleActivity);
       clearInterval(interval);
     };
   }, []);
@@ -119,7 +124,7 @@ export default function RecruiterOverview() {
       if (recruiter) {
         const { data: negoData } = await supabase
           .from("negotiations")
-          .select("id, status, fit_score, created_at, candidate:candidates(title, skills, salary_min)")
+          .select("id, status, fit_score, created_at, candidate:candidates(title, skills, salary_min, profile:profiles(name))")
           .eq("recruiter_id", recruiter.id)
           .order("created_at", { ascending: false });
         if (negoData && negoData.length > 0) setNegotiations(negoData);
@@ -163,12 +168,16 @@ export default function RecruiterOverview() {
           <div className="divide-y divide-card-border/60">
             {negotiations.map((n) => {
               const candidate = Array.isArray(n.candidate) ? n.candidate[0] : n.candidate;
+              const candidateName = (Array.isArray(candidate?.profile)
+                ? candidate?.profile[0]?.name
+                : candidate?.profile?.name) || "Candidate";
               return (
                 <Link key={n.id} href={`/negotiations/${n.id}`} className="flex items-center justify-between px-6 py-4 hover:bg-subtle/50 transition-colors">
                   <div className="flex items-center gap-4 min-w-0">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-accent/10 to-accent/5 text-sm font-bold text-accent shrink-0">{candidate?.title?.[0] || "?"}</div>
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-accent/10 to-accent/5 text-sm font-bold text-accent shrink-0">{candidateName[0]}</div>
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground truncate">{candidate?.title || "Candidate"}</p>
+                      <p className="text-sm font-semibold text-foreground truncate">{candidateName}</p>
+                      <p className="text-xs text-muted truncate mt-0.5">{candidate?.title || "Developer"}</p>
                       <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                         {candidate?.skills?.slice(0, 3).map((s: string) => (
                           <span key={s} className="rounded-full bg-accent/5 px-2 py-0.5 text-[10px] font-medium text-accent">{s}</span>
