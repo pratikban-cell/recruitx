@@ -10,7 +10,7 @@
   --color-card-border: #e5e7eb;
   --color-muted: #6b7280;
   --color-subtle: #f9fafb;
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-geist-sans), 'Inter', sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
@@ -95,5 +95,3 @@ body {
 
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-
-
