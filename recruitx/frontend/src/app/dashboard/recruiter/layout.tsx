@@ -60,7 +60,10 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
   };
 
   if (loading) return (
-    <div className="flex min-h-screen items-center justify-center bg-subtle">
+    <div className="flex min-h-screen items-center justify-center bg-subtle" style={{
+      "--color-subtle": "#f6f3fa",
+      "--color-accent": "#7c3aed",
+    } as React.CSSProperties}>
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
     </div>
   );
@@ -68,7 +71,12 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
   const title = pageTitles[pathname] || "Overview";
 
   return (
-    <div className="min-h-screen bg-subtle relative pt-16">
+    <div className="min-h-screen bg-subtle relative pt-16" style={{
+      "--color-subtle": "#f6f3fa",
+      "--color-accent": "#7c3aed",
+      "--color-accent-dark": "#6d28d9",
+      "--color-accent-gradient": "#8b5cf6",
+    } as React.CSSProperties}>
       <Sidebar isRecruiter userName={profile?.name} onLogout={handleLogout} />
       <div className="pl-32">
         <TopBar title={title} />

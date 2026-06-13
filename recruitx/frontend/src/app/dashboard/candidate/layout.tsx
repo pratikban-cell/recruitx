@@ -46,7 +46,10 @@ export default function CandidateLayout({ children }: { children: React.ReactNod
   };
 
   if (loading) return (
-    <div className="flex min-h-screen items-center justify-center bg-subtle">
+    <div className="flex min-h-screen items-center justify-center bg-subtle" style={{
+      "--color-subtle": "#f2f5fa",
+      "--color-accent": "#2563eb",
+    } as React.CSSProperties}>
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
     </div>
   );
@@ -54,7 +57,12 @@ export default function CandidateLayout({ children }: { children: React.ReactNod
   const title = pageTitles[pathname] || "Overview";
 
   return (
-    <div className="min-h-screen bg-subtle relative pt-16">
+    <div className="min-h-screen bg-subtle relative pt-16" style={{
+      "--color-subtle": "#f2f5fa",
+      "--color-accent": "#2563eb",
+      "--color-accent-dark": "#1d4ed8",
+      "--color-accent-gradient": "#3b82f6",
+    } as React.CSSProperties}>
       <Sidebar userName={profile?.name} onLogout={handleLogout} />
       <div className="pl-32">
         <TopBar title={title} />
