@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import io
 import json
@@ -242,7 +242,7 @@ async def get_negotiation_coaching(
 
     client = OpenAI(api_key=api_key)
 
-    system_prompt = f"""You are Coach Nirvan, a premium, hyper-intelligent interview prep agent and negotiation advisor.
+    system_prompt = f"""You are Coach recruitx, a premium, hyper-intelligent interview prep agent and negotiation advisor.
 You are helping a candidate prepare for an upcoming interview or review their AI agent's negotiation transcript.
 
 Here are the negotiation details:

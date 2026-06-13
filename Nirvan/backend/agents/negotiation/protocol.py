@@ -1,7 +1,7 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 from typing import Literal
 
-# ── A2A message types for Nirvan negotiation ──────────
+# ── A2A message types for recruitx negotiation ──────────
 
 NegotiationRound = Literal[1, 2, 3, 4]
 NegotiationStatus = Literal[

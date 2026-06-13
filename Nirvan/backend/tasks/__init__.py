@@ -1,1 +1,1 @@
-"""Background task queue package for Nirvan backend."""
+﻿"""Background task queue package for recruitx backend."""

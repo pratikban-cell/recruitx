@@ -1,4 +1,4 @@
--- Schema definitions for Nirvan Relational Configuration Tables
+﻿-- Schema definitions for recruitx Relational Configuration Tables
 
 CREATE TABLE IF NOT EXISTS recruiter_configs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

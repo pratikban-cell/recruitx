@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from a2a.server.request_handlers import DefaultRequestHandlerV2
 from a2a.server.routes import create_agent_card_routes, create_jsonrpc_routes
@@ -18,7 +18,7 @@ from api.negotiations import router as negotiations_router
 from api.recruiters import router as recruiters_router
 from api.ws import router as ws_router
 
-app = FastAPI(title="Nirvan Backend", version="0.1.0")
+app = FastAPI(title="recruitx Backend", version="0.1.0")
 
 import os
 
@@ -43,9 +43,9 @@ task_store = InMemoryTaskStore()
 
 candidate_executor = CandidateAgentExecutor()
 candidate_card = AgentCard()
-candidate_card.name = "Nirvan Candidate Agent"
+candidate_card.name = "recruitx Candidate Agent"
 candidate_card.description = (
-    "Represents candidates in the Nirvan A2A hiring marketplace"
+    "Represents candidates in the recruitx A2A hiring marketplace"
 )
 candidate_card.version = "0.1.0"
 candidate_card.capabilities.CopyFrom(AgentCapabilities())
@@ -57,9 +57,9 @@ candidate_handler = DefaultRequestHandlerV2(
 
 recruiter_executor = RecruiterAgentExecutor()
 recruiter_card = AgentCard()
-recruiter_card.name = "Nirvan Recruiter Agent"
+recruiter_card.name = "recruitx Recruiter Agent"
 recruiter_card.description = (
-    "Represents recruiters in the Nirvan A2A hiring marketplace"
+    "Represents recruiters in the recruitx A2A hiring marketplace"
 )
 recruiter_card.version = "0.1.0"
 recruiter_card.capabilities.CopyFrom(AgentCapabilities())

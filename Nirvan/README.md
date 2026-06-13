@@ -1,6 +1,6 @@
-# Nirvan: Autonomous A2A Talent Marketplace
+﻿# recruitx: Autonomous A2A Talent Marketplace
 
-Nirvan is an Agent-to-Agent hiring marketplace where candidate and recruiter agents can match, negotiate compensation/work preferences, support human steering, and schedule interviews.
+recruitx is an Agent-to-Agent hiring marketplace where candidate and recruiter agents can match, negotiate compensation/work preferences, support human steering, and schedule interviews.
 
 ## Project layout
 

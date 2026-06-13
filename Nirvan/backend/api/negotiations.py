@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import json
 import uuid
@@ -532,8 +532,8 @@ async def run_negotiation_loop(negotiation_id: str):
         ):
             return None
 
-        cand_email = cand_conn_res.data[0]["email"] or "candidate@nirvan.ai"
-        rec_email = rec_conn_res.data[0]["email"] or "recruiter@nirvan.ai"
+        cand_email = cand_conn_res.data[0]["email"] or "candidate@recruitx.ai"
+        rec_email = rec_conn_res.data[0]["email"] or "recruiter@recruitx.ai"
 
         is_mock = cand_token == "mock_access_token" or rec_token == "mock_access_token"
 
@@ -629,7 +629,7 @@ async def run_negotiation_loop(negotiation_id: str):
 
                 # Create Google Calendar Event
                 event_body = {
-                    "summary": "Nirvan Match Interview",
+                    "summary": "recruitx Match Interview",
                     "description": f"Interview scheduled dynamically by Candidate & Recruiter AI agents.\nNegotiation Ref: {negotiation_id}",
                     "start": {"dateTime": start_str},
                     "end": {"dateTime": end_str},
