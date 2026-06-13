@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { createClient } from "@/lib/supabase-client";
 import { useEffect, useState } from "react";
@@ -266,7 +266,7 @@ export default function RecruiterCandidates() {
             {
               sender_role: "system",
               content:
-                "Negotiation started: candidate Luffy matched with Leapfrog.",
+                "Negotiation started: candidate Luffy matched with TechCorp.",
             },
             {
               sender_role: "recruiter",

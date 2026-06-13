@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { createClient } from "@/lib/supabase-client";
 import { useEffect, useState } from "react";
@@ -90,7 +90,7 @@ export default function RecruiterOverview() {
     // Simulating background match events to make the dashboard feel actively negotiated
     const simulations = [
       { action: "🔍 Scanning Talent Pool", detail: "Found 12 candidate profiles matching 'FastAPI, AWS'", time: "Just now" },
-      { action: "🤖 Agent Negotiation", detail: "Luffy's Agent negotiating mentoring allowance with Leapfrog", time: "Just now" },
+      { action: "🤖 Agent Negotiation", detail: "Luffy's Agent negotiating mentoring allowance with TechCorp", time: "Just now" },
       { action: "📊 Weight Assessment", detail: "Calculated fit score of 81% for Chopper on BioMed", time: "Just now" },
       { action: "⚡ Matching scans completed", detail: "Vercel Platform role: 8 candidate matches generated successfully", time: "Just now" }
     ];

@@ -1074,7 +1074,7 @@ async def get_interview_kit(
 
     cand_title = neg["candidate"]["title"] if neg.get("candidate") else "Software Engineer"
     cand_skills = ", ".join(neg["candidate"]["skills"]) if neg.get("candidate") and neg["candidate"].get("skills") else "N/A"
-    company_name = neg["recruiter"]["company"] if neg.get("recruiter") else "Leapfrog"
+    company_name = neg["recruiter"]["company"] if neg.get("recruiter") else "TechCorp"
     must_haves = ", ".join(neg["recruiter"]["must_haves"]) if neg.get("recruiter") and neg["recruiter"].get("must_haves") else "N/A"
 
     system_prompt = """You are an elite AI technical talent strategist. Analyze this negotiation transcript between the Candidate Agent and the Recruiter Agent.

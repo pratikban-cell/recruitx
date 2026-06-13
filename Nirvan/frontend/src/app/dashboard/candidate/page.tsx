@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { createClient } from "@/lib/supabase-client";
 import { candidateGetTask } from "@/lib/api";
@@ -155,7 +155,7 @@ export default function CandidateOverview() {
         {
           id: Date.now() + 1,
           action: "🤝 Contact initiated",
-          detail: "Agent approached Leapfrog's recruitment agent for the Backend role.",
+          detail: "Agent approached TechCorp's recruitment agent for the Backend role.",
           time: "Just now",
           type: "success"
         },
@@ -168,7 +168,7 @@ export default function CandidateOverview() {
         {
           id: Date.now() + 2,
           action: "💬 Salary negotiating",
-          detail: "Negotiating Leapfrog base package. Proposing $120,000 alignment.",
+          detail: "Negotiating TechCorp base package. Proposing $120,000 alignment.",
           time: "Just now",
           type: "warning"
         },

@@ -1,4 +1,4 @@
--- ============================================================
+﻿-- ============================================================
 -- recruitx — Full Database Reset & Single Reference Mock Seed
 -- ============================================================
 
@@ -115,7 +115,7 @@ VALUES
 
 -- 5. Create Recruiter and Candidate details
 INSERT INTO public.recruiters (id, profile_id, company, position, salary_range_min, salary_range_max, remote_policy, created_at, updated_at)
-VALUES ('fe9e3b5a-aca8-4138-a8b8-1d4929768f09', '8da26451-bf23-4d3d-b247-147e80462fcd', 'Leapfrog', 'Hiring Manager', 10000, 20000, 'hybrid', now(), now());
+VALUES ('fe9e3b5a-aca8-4138-a8b8-1d4929768f09', '8da26451-bf23-4d3d-b247-147e80462fcd', 'TechCorp', 'Hiring Manager', 10000, 20000, 'hybrid', now(), now());
 
 INSERT INTO public.candidates (id, profile_id, title, skills, salary_min, remote_pref, availability, created_at, updated_at)
 VALUES ('7804c4f3-0fc3-43d9-8999-ceddb40b2440', 'e99f9a9b-00f9-4841-aa59-40707374f22e', 'DevOps Intern', ARRAY['Docker', 'Linux', 'CI/CD'], 15000, true, 'immediate', now(), now());
@@ -123,7 +123,7 @@ VALUES ('7804c4f3-0fc3-43d9-8999-ceddb40b2440', 'e99f9a9b-00f9-4841-aa59-4070737
 
 -- 6. Create Job Listing
 INSERT INTO public.jobs (id, recruiter_id, company, title, location, remote_policy, salary_min, salary_max, salary_public, stack, description, culture_signals, experience_required, status, created_at, updated_at)
-VALUES ('2c593449-fcd0-4597-9342-79ef88edd385', 'fe9e3b5a-aca8-4138-a8b8-1d4929768f09', 'Leapfrog', 'DevOps Intern', 'Kathmandu', 'hybrid', 10000, 15000, true, ARRAY['Docker', 'Linux', 'CI/CD'], 'You will be working on DevOps automation.', '4 days per week', '0', 'active', now(), now());
+VALUES ('2c593449-fcd0-4597-9342-79ef88edd385', 'fe9e3b5a-aca8-4138-a8b8-1d4929768f09', 'TechCorp', 'DevOps Intern', 'Kathmandu', 'hybrid', 10000, 15000, true, ARRAY['Docker', 'Linux', 'CI/CD'], 'You will be working on DevOps automation.', '4 days per week', '0', 'active', now(), now());
 
 
 -- 7. Create Active Negotiation
@@ -134,7 +134,7 @@ VALUES ('43bf66ee-61ed-4f36-ba67-2c7c677d47ee', '7804c4f3-0fc3-43d9-8999-ceddb40
 -- 8. Create Chat Message Dialogue History
 INSERT INTO public.messages (id, negotiation_id, sender_role, content, created_at)
 VALUES 
-  (gen_random_uuid(), '43bf66ee-61ed-4f36-ba67-2c7c677d47ee', 'recruiter', 'Hello Luffy! I''ve reviewed your profile for the DevOps Intern role at Leapfrog. What are your salary expectations for this position?', now() - interval '10 minutes'),
+  (gen_random_uuid(), '43bf66ee-61ed-4f36-ba67-2c7c677d47ee', 'recruiter', 'Hello Luffy! I''ve reviewed your profile for the DevOps Intern role at TechCorp. What are your salary expectations for this position?', now() - interval '10 minutes'),
   (gen_random_uuid(), '43bf66ee-61ed-4f36-ba67-2c7c677d47ee', 'candidate', 'Hello Zoro! Thank you for considering my application. Based on my skills with Docker and Linux, my minimum salary expectation is $15,000. I am also interested in learning about mentorship opportunities.', now() - interval '8 minutes'),
   (gen_random_uuid(), '43bf66ee-61ed-4f36-ba67-2c7c677d47ee', 'recruiter', 'Thanks for sharing. Our standard intern package starts at $10,000, but we do have some flexibility up to $13,000 for candidates with strong hands-on experience. How does that sound?', now() - interval '6 minutes'),
   (gen_random_uuid(), '43bf66ee-61ed-4f36-ba67-2c7c677d47ee', 'candidate', 'I understand. I could align with a package around $14,000 if we can include a flexible remote schedule of 2 days a week. What do you think?', now() - interval '4 minutes');

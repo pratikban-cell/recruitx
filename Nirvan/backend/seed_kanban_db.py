@@ -1,4 +1,4 @@
-import sys
+﻿import sys
 import uuid
 from pathlib import Path
 
@@ -243,7 +243,7 @@ def main():
     # 1. Seed Recruiter Zoro (and sign in as Zoro)
     zoro = create_or_get_recruiter(
         name="Zoro",
-        company="Leapfrog",
+        company="TechCorp",
         email="zoro_swordsman@gmail.com",
     )
 
@@ -258,7 +258,7 @@ def main():
         job_insert = db.table("jobs").insert({
             "id": job_id,
             "recruiter_id": zoro["id"],
-            "company": "Leapfrog",
+            "company": "TechCorp",
             "title": "DevOps Intern",
             "location": "Kathmandu",
             "remote_policy": "hybrid",
@@ -316,7 +316,7 @@ def main():
         messages_to_seed = [
             {
                 "sender_role": "recruiter",
-                "content": "Hello Luffy! I've reviewed your profile for the DevOps Intern role at Leapfrog. What are your salary expectations for this position?"
+                "content": "Hello Luffy! I've reviewed your profile for the DevOps Intern role at TechCorp. What are your salary expectations for this position?"
             },
             {
                 "sender_role": "candidate",
