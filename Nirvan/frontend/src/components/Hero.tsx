@@ -1,362 +1,481 @@
-"use client";
+﻿"use client";
 
-import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState, useRef } from "react";
+import Link from "next/link";
 
-function AgentMessage({ text, role, delay }: { text: string; role: "candidate" | "recruiter"; delay: number }) {
-  const [visible, setVisible] = useState(false);
 
-  useEffect(() => {
-    const t = setTimeout(() => setVisible(true), delay);
-    return () => clearTimeout(t);
-  }, [delay]);
 
-  const isCandidate = role === "candidate";
-
-  return (
-    <motion.div
-      initial={false}
-      animate={visible ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0, y: 16, scale: 0.95 }}
-      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-      className={`flex ${isCandidate ? "justify-start" : "justify-end"}`}
-    >
-      <div
-        className={`max-w-[88%] rounded-2xl p-3.5 ${
-          isCandidate
-            ? "rounded-bl-sm bg-accent/5 border border-accent/10"
-            : "rounded-br-sm bg-background border border-card-border"
-        }`}
-      >
-        <p className={`text-xs leading-relaxed ${isCandidate ? "text-accent-dark font-medium" : "text-foreground"}`}>{text}</p>
-        <p className={`mt-1.5 text-[10px] font-medium ${isCandidate ? "text-accent/40" : "text-muted/60"}`}>
-          {isCandidate ? "Candidate Agent · You" : "Recruiter Agent · Stripe"}
-        </p>
-      </div>
-    </motion.div>
-  );
+interface ChatMessage {
+  id: string;
+  sender: "candidate" | "recruiter";
+  text: string;
+  avatar: string;
+  senderName: string;
+  roleTag: string;
 }
 
-function TypingIndicator({ side }: { side: "left" | "right" }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0 }}
-      className={`flex items-center gap-2.5 px-1 py-2.5 ${side === "right" ? "justify-end" : ""}`}
-    >
-      <div className="flex items-center gap-1">
-        <span className="typing-dot" />
-        <span className="typing-dot" />
-        <span className="typing-dot" />
-      </div>
-      <span className="text-[11px] font-medium text-muted/60">Agent negotiating...</span>
-    </motion.div>
-  );
-}
-
-function ConfirmationBadge({ delay }: { delay: number }) {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    const t = setTimeout(() => setShow(true), delay);
-    return () => clearTimeout(t);
-  }, [delay]);
-
-  if (!show) return null;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.85, y: 8 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="flex items-center gap-2 rounded-lg bg-accent/10 border border-accent/15 px-3 py-2"
-    >
-      <svg className="h-4 w-4 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-      </svg>
-      <span className="text-xs font-semibold text-accent-dark">Meeting booked · Pre-brief sent</span>
-    </motion.div>
-  );
-}
-
-function AnimatedHeading() {
-  const words = "Where agents negotiate, so humans only meet when it matters".split(" ");
-
-  return (
-    <motion.h1
-      initial="hidden"
-      animate="visible"
-      variants={{
-        visible: { transition: { staggerChildren: 0.035, delayChildren: 0.3 } },
-      }}
-      className="text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-foreground"
-    >
-      {words.map((word, i) => {
-        const isGradient = i >= 3;
-        return (
-          <motion.span
-            key={i}
-            variants={{
-              hidden: { opacity: 0, y: 30, rotateX: -40, filter: "blur(6px)" },
-              visible: {
-                opacity: 1,
-                y: 0,
-                rotateX: 0,
-                filter: "blur(0px)",
-                transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
-              },
-            }}
-            className={`inline-block ${isGradient ? "text-gradient" : ""}`}
-          >
-            {word}
-            {i < words.length - 1 && "\u00A0"}
-          </motion.span>
-        );
-      })}
-    </motion.h1>
-  );
-}
-
-const candidateMessages = [
-  { text: "Remote: confirmed. Salary: looking at $95k–$110k. 3yrs Python verified on GitHub. Start: Aug 2026. Good alignment.", delay: 1400 },
-  { text: "Appreciate the honesty — green flag. Strong mutual fit. Recommend scheduling.", delay: 5400 },
-];
-
-const recruiterMessages = [
-  { text: "Hi — Senior Backend role, Series A, 12 engineers. Fully remote. Band: $85k–$105k. Worth a deeper look?", delay: 500 },
-  { text: "We can work in that range. One thing to flag: Glassdoor mention of crunch during a launch — was one-time, not the norm.", delay: 3800 },
+const chatMessagesData: ChatMessage[] = [
+  {
+    id: "msg1",
+    sender: "recruiter",
+    text: "Hi there! I'm representing Stripe's engineering team. We are looking for a Senior Fullstack Engineer. Roshan's profile shows excellent expertise in Next.js and Tailwind. Is he open to new roles?",
+    avatar: "S",
+    senderName: "Stripe Agent",
+    roleTag: "Stripe Engineering"
+  },
+  {
+    id: "msg2",
+    sender: "candidate",
+    text: "Hello! Roshan is open to discussions. Let's align on core criteria: He requires 100% remote, a minimum $150k base salary, and a high-trust culture. How does this fit Stripe's budget?",
+    avatar: "Ava",
+    senderName: "Ava",
+    roleTag: "Roshan's Career Agent"
+  },
+  {
+    id: "msg3",
+    sender: "recruiter",
+    text: "Compensation is fully aligned ($150k - $175k base). The role is 100% remote. Our culture values high autonomy. We'd love to proceed.",
+    avatar: "S",
+    senderName: "Stripe Agent",
+    roleTag: "Stripe Engineering"
+  },
+  {
+    id: "msg4",
+    sender: "candidate",
+    text: "Great! I've scanned his Google Calendar. He is available next Tuesday at 10:00 AM or Wednesday at 2:00 PM EST. Do either of those work?",
+    avatar: "Ava",
+    senderName: "Ava",
+    roleTag: "Roshan's Career Agent"
+  },
+  {
+    id: "msg5",
+    sender: "recruiter",
+    text: "Tuesday at 10:00 AM works perfectly. Let's lock it in.",
+    avatar: "S",
+    senderName: "Stripe Agent",
+    roleTag: "Stripe Engineering"
+  },
+  {
+    id: "msg6",
+    sender: "candidate",
+    text: "Meeting booked with Stripe Tech Lead. Calendar invite and technical dossier have been dispatched.",
+    avatar: "Ava",
+    senderName: "Ava",
+    roleTag: "Roshan's Career Agent"
+  }
 ];
 
 export default function Hero() {
-  const [candidateRound, setCandidateRound] = useState(0);
-  const [recruiterRound, setRecruiterRound] = useState(0);
-  const [candidateTyping, setCandidateTyping] = useState(false);
-  const [recruiterTyping, setRecruiterTyping] = useState(false);
+  const [step, setStep] = useState(0);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
+  // Auto scroll chat smoothly inside the container only (preventing page jumps)
   useEffect(() => {
-    const timers: ReturnType<typeof setTimeout>[] = [];
+    const container = chatContainerRef.current;
+    if (container) {
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: "smooth"
+      });
+    }
+  }, [step]);
 
-    recruiterMessages.forEach((msg, i) => {
-      timers.push(setTimeout(() => setRecruiterTyping(true), msg.delay - 300));
-      timers.push(setTimeout(() => {
-        setRecruiterTyping(false);
-        setRecruiterRound(i + 1);
-      }, msg.delay));
-    });
+  // Step Timeline Controller
+  useEffect(() => {
+    let active = true;
+    const runSimulation = async () => {
+      while (active) {
+        // Step 0: Stripe Agent typing
+        setStep(0);
+        await new Promise((r) => setTimeout(r, 1500));
+        if (!active) break;
 
-    candidateMessages.forEach((msg, i) => {
-      timers.push(setTimeout(() => setCandidateTyping(true), msg.delay - 300));
-      timers.push(setTimeout(() => {
-        setCandidateTyping(false);
-        setCandidateRound(i + 1);
-      }, msg.delay));
-    });
+        // Step 1: Stripe Agent message 1
+        setStep(1);
+        await new Promise((r) => setTimeout(r, 2000));
+        if (!active) break;
 
-    return () => timers.forEach(clearTimeout);
+        // Step 2: Ava typing
+        setStep(2);
+        await new Promise((r) => setTimeout(r, 1500));
+        if (!active) break;
+
+        // Step 3: Ava message 1
+        setStep(3);
+        await new Promise((r) => setTimeout(r, 2000));
+        if (!active) break;
+
+        // Step 4: Stripe Agent typing 2
+        setStep(4);
+        await new Promise((r) => setTimeout(r, 1500));
+        if (!active) break;
+
+        // Step 5: Stripe Agent message 2
+        setStep(5);
+        await new Promise((r) => setTimeout(r, 2000));
+        if (!active) break;
+
+        // Step 6: Ava typing 2
+        setStep(6);
+        await new Promise((r) => setTimeout(r, 1500));
+        if (!active) break;
+
+        // Step 7: Ava message 2
+        setStep(7);
+        await new Promise((r) => setTimeout(r, 2000));
+        if (!active) break;
+
+        // Step 8: Stripe Agent typing 3
+        setStep(8);
+        await new Promise((r) => setTimeout(r, 1500));
+        if (!active) break;
+
+        // Step 9: Stripe Agent message 3
+        setStep(9);
+        await new Promise((r) => setTimeout(r, 2000));
+        if (!active) break;
+
+        // Step 10: Ava message 3 (Booked)
+        setStep(10);
+        await new Promise((r) => setTimeout(r, 1500));
+        if (!active) break;
+
+        // Step 11: Final booked state
+        setStep(11);
+        await new Promise((r) => setTimeout(r, 8000)); // Hold completed state for 8s
+      }
+    };
+
+    runSimulation();
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const showConfirmation = candidateRound >= candidateMessages.length;
-  const showScore = recruiterRound >= recruiterMessages.length && candidateRound >= candidateMessages.length;
+  // Compute states based on step
+  const getVisibleMessages = () => {
+    const msgs: ChatMessage[] = [];
+    if (step >= 1) msgs.push(chatMessagesData[0]);
+    if (step >= 3) msgs.push(chatMessagesData[1]);
+    if (step >= 5) msgs.push(chatMessagesData[2]);
+    if (step >= 7) msgs.push(chatMessagesData[3]);
+    if (step >= 9) msgs.push(chatMessagesData[4]);
+    if (step >= 10) msgs.push(chatMessagesData[5]);
+    return msgs;
+  };
+
+
+
+  const isRecruiterTyping = step === 0 || step === 4 || step === 8;
+  const isCandidateTyping = step === 2 || step === 6;
+
+  // Fit score progression
+  let fitScore = 50;
+  if (step >= 5 && step < 9) fitScore = 85;
+  if (step >= 9) fitScore = 96;
+
+  // Checklist states
+  const getChecklistStatus = (item: "git" | "salary" | "location" | "calendar") => {
+    if (item === "git") {
+      return step >= 3 ? "aligned" : "checking";
+    }
+    if (item === "salary" || item === "location") {
+      if (step < 3) return "pending";
+      if (step === 3 || step === 4) return "checking";
+      return "aligned";
+    }
+    if (item === "calendar") {
+      if (step < 7) return "pending";
+      if (step === 7 || step === 8) return "checking";
+      return "aligned";
+    }
+    return "pending";
+  };
 
   return (
-    <section className="relative min-h-screen overflow-hidden bg-gradient-to-b from-white via-white to-subtle">
+    <section className="relative min-h-screen overflow-hidden bg-background py-20 lg:py-32">
+      {/* Visual background grid pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#f3f4f6_1px,transparent_1px),linear-gradient(to_bottom,#f3f4f6_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-80 pointer-events-none" />
+
+      {/* Decorative Blur Orbs */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-1/4 -top-32 h-[700px] w-[700px] rounded-full bg-accent/4 blur-[180px] animate-breathe" />
-        <div className="absolute right-0 top-1/4 h-[500px] w-[500px] rounded-full bg-accent-gradient/4 blur-[160px] animate-breathe" style={{ animationDelay: "2.5s" }} />
-        <div className="absolute -left-32 bottom-32 h-[500px] w-[500px] rounded-full bg-accent/3 blur-[140px] animate-breathe" style={{ animationDelay: "4s" }} />
+        <div className="absolute left-1/4 -top-32 h-[600px] w-[600px] rounded-full bg-accent/3 blur-[140px] animate-breathe" />
+        <div className="absolute right-10 top-1/4 h-[500px] w-[500px] rounded-full bg-accent-gradient/2 blur-[120px] animate-breathe" style={{ animationDelay: "2.5s" }} />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-6 pt-32 lg:pt-40">
+      <div className="relative z-10 mx-auto max-w-7xl px-6 pt-16 lg:pt-20">
+        {/* Hero Copy */}
         <div className="mx-auto max-w-4xl text-center">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/5 px-4 py-1.5 text-xs font-semibold text-accent mb-6"
+          >
+            <span>✨ Introducing Agent-to-Agent Sourcing</span>
+          </motion.div>
 
-
-          <AnimatedHeading />
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-foreground"
+          >
+            Where agents negotiate, so humans only <span className="text-gradient">meet when it matters.</span>
+          </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
             className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-muted sm:text-lg"
           >
-            Your AI agent handles the negotiation. Verifies skills from your GitHub.
-            Checks calendar availability. Books the meeting. Briefs you beforehand.
-            You just show up.
+            recruitx is the first autonomous agent network for technical sourcing.
+            Your dedicated AI agent represents your preferences, verifies skills from your GitHub,
+            compares packages, and books final interviews automatically.
           </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 1.2 }}
+            transition={{ duration: 0.7, delay: 0.3 }}
             className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
           >
-            <a
+            <Link
               href="/auth"
-              className="group relative overflow-hidden rounded-lg bg-foreground px-8 py-3 text-sm font-semibold text-white transition-all hover:scale-105 shadow-lg hover:shadow-xl shadow-black/10"
+              className="group relative overflow-hidden rounded-xl bg-foreground px-8 py-3.5 text-sm font-semibold text-white transition-all hover:scale-[1.03] shadow-lg shadow-black/10 w-full sm:w-auto"
             >
-              <span className="relative z-10">Start for free</span>
+              <span className="relative z-10">Start your agent</span>
               <span className="absolute inset-0 bg-gradient-to-r from-accent to-accent-gradient opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-            </a>
+            </Link>
             <a
               href="#how-it-works"
-              className="rounded-lg border border-card-border bg-white/60 backdrop-blur-sm px-8 py-3 text-sm font-semibold text-foreground transition-all hover:border-accent/30 hover:bg-accent/5 hover:shadow-md"
+              className="rounded-xl border border-card-border bg-white/70 backdrop-blur-sm px-8 py-3.5 text-sm font-semibold text-foreground transition-all hover:border-accent/30 hover:bg-accent/5 w-full sm:w-auto text-center"
             >
               How it works &nbsp;→
             </a>
           </motion.div>
         </div>
 
+        {/* Demo Interface Card */}
         <motion.div
-          initial={{ opacity: 0, y: 80, scale: 0.96 }}
+          initial={{ opacity: 0, y: 40, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.9, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="relative mx-auto mt-24 max-w-5xl"
+          transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          className="relative mx-auto mt-20 max-w-5xl rounded-2xl border border-card-border bg-card p-1 shadow-card"
         >
-          <div className="shadow-glow absolute -inset-4 rounded-3xl opacity-60" />
+          {/* Card Header resembling browser bar */}
+          <div className="flex items-center justify-between border-b border-card-border bg-subtle px-5 py-3.5 rounded-t-2xl">
+            <div className="flex items-center gap-2">
+              <span className="h-3 w-3 rounded-full bg-red-400/80" />
+              <span className="h-3 w-3 rounded-full bg-yellow-400/80" />
+              <span className="h-3 w-3 rounded-full bg-green-400/80" />
+            </div>
+            <div className="rounded-md border border-card-border bg-card px-4 py-1 text-xs font-semibold text-muted select-none">
+              recruitx.app — Active Sourcing Engine
+            </div>
+            <div className="w-12" />
+          </div>
 
-          <div className="relative rounded-2xl border border-card-border bg-white/80 backdrop-blur-xl p-1 shadow-xl shadow-black/[0.03]">
-            <div className="flex items-center gap-2 border-b border-card-border bg-subtle/70 px-5 py-3 rounded-t-2xl">
-              <motion.span
-                className="h-3 w-3 rounded-full bg-red-400/80"
-                animate={{ opacity: [0.8, 1, 0.8] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <motion.span
-                className="h-3 w-3 rounded-full bg-yellow-400/80"
-                animate={{ opacity: [0.8, 1, 0.8] }}
-                transition={{ duration: 2, delay: 0.3, repeat: Infinity }}
-              />
-              <motion.span
-                className="h-3 w-3 rounded-full bg-green-400/80"
-                animate={{ opacity: [0.8, 1, 0.8] }}
-                transition={{ duration: 2, delay: 0.6, repeat: Infinity }}
-              />
-              <motion.span
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1.5 }}
-                className="ml-4 rounded-md border border-card-border bg-white/80 backdrop-blur-sm px-3 py-1 text-xs font-medium text-muted"
-              >
-                nirvan.app — Live Agent Negotiation
-              </motion.span>
+          <div className="grid grid-cols-1 md:grid-cols-5 divide-y md:divide-y-0 md:divide-x divide-card-border/60">
+            {/* Column 1: Active Pipelines Sidebar */}
+            <div className="md:col-span-1 p-4 bg-subtle/30 space-y-4">
+              <h4 className="text-[10px] font-bold text-muted uppercase tracking-wider">Active Deals</h4>
+              <div className="space-y-2">
+                <div className="flex items-center gap-3 p-2 rounded-xl bg-card border border-accent/20 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 bottom-0 left-0 w-1 bg-accent" />
+                  <div className="h-8 w-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700">S</div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-foreground truncate">Stripe</p>
+                    <p className="text-[10px] text-muted truncate">Senior Fullstack</p>
+                  </div>
+                  {step < 11 && (
+                    <span className="absolute top-2 right-2 flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-3 p-2 rounded-xl bg-transparent opacity-60">
+                  <div className="h-8 w-8 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">V</div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-foreground">Vercel</p>
+                    <p className="text-[10px] text-muted">Backend Engineer</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 p-2 rounded-xl bg-transparent opacity-60">
+                  <div className="h-8 w-8 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center text-xs font-bold">F</div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-foreground">Figma</p>
+                    <p className="text-[10px] text-muted">Core Frontend</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <div className="grid grid-cols-5 divide-x divide-card-border/60">
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1.2, duration: 0.6 }}
-                className="col-span-2 space-y-4 p-5"
+            {/* Column 2 & 3: Negotiation Chat Thread */}
+            <div className="md:col-span-3 flex flex-col h-[480px] bg-background">
+              {/* Chat Messages Log */}
+              <div 
+                ref={chatContainerRef}
+                className="flex-1 overflow-y-auto p-5 space-y-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
               >
-                <div className="flex items-center gap-3">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 1.4, type: "spring", stiffness: 200 }}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/10 text-xs font-bold text-accent"
-                  >
-                    Y
+                <AnimatePresence initial={false}>
+                  {getVisibleMessages().map((msg) => {
+                    const isCandidate = msg.sender === "candidate";
+                    return (
+                      <motion.div
+                        key={msg.id}
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`flex gap-3 ${isCandidate ? "flex-row-reverse" : "flex-row"}`}
+                      >
+                        {/* Avatar */}
+                        <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 shadow-sm ${
+                          isCandidate 
+                            ? "bg-accent text-white" 
+                            : "bg-indigo-50 border border-indigo-100 text-indigo-700"
+                        }`}>
+                          {msg.avatar === "Ava" ? "🤖" : msg.avatar}
+                        </div>
+
+                        {/* Speech Bubble */}
+                        <div className={`max-w-[80%] rounded-2xl p-4 shadow-sm relative ${
+                          isCandidate
+                            ? "bg-accent/[0.04] border border-accent/10 rounded-tr-none text-right"
+                            : "bg-card border border-card-border rounded-tl-none text-left"
+                        }`}>
+                          <div className={`flex items-center gap-2 mb-1.5 ${isCandidate ? "justify-end" : "justify-start"}`}>
+                            <span className="text-[11px] font-bold text-foreground">{msg.senderName}</span>
+                            <span className="text-[9px] font-semibold text-muted bg-subtle px-1.5 py-0.5 rounded">
+                              {msg.roleTag}
+                            </span>
+                          </div>
+                          <p className="text-xs leading-relaxed text-foreground font-medium">{msg.text}</p>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+
+                {/* Live Typing Indicators */}
+                {isRecruiterTyping && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 items-center">
+                    <div className="h-8 w-8 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-bold shadow-sm">S</div>
+                    <div className="bg-card border border-card-border rounded-2xl rounded-tl-none p-3.5 flex items-center gap-1.5 shadow-sm">
+                      <span className="typing-dot" />
+                      <span className="typing-dot" />
+                      <span className="typing-dot" />
+                      <span className="text-[10px] text-muted font-medium ml-1">Stripe Agent is replying...</span>
+                    </div>
                   </motion.div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">Your Agent</p>
-                    <p className="text-xs text-muted/70">Representing you</p>
-                  </div>
-                </div>
+                )}
 
-                <div className="space-y-3 min-h-[200px]">
-                  {candidateMessages.slice(0, candidateRound).map((msg, i) => (
-                    <AgentMessage key={i} text={msg.text} role="candidate" delay={0} />
-                  ))}
-                  {candidateTyping && <TypingIndicator side="left" />}
-                  {showConfirmation && <ConfirmationBadge delay={0} />}
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1.4, duration: 0.6 }}
-                className="col-span-2 space-y-4 p-5"
-              >
-                <div className="flex items-center gap-3">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: 1.6, type: "spring", stiffness: 200 }}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-accent to-accent-gradient text-xs font-bold text-white"
-                  >
-                    R
+                {isCandidateTyping && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 items-center flex-row-reverse">
+                    <div className="h-8 w-8 rounded-full bg-accent text-white flex items-center justify-center text-xs font-bold shadow-sm">🤖</div>
+                    <div className="bg-accent/[0.04] border border-accent/10 rounded-2xl rounded-tr-none p-3.5 flex items-center gap-1.5 shadow-sm">
+                      <span className="typing-dot" />
+                      <span className="typing-dot" />
+                      <span className="typing-dot" />
+                      <span className="text-[10px] text-accent/60 font-medium ml-1">Ava is negotiating...</span>
+                    </div>
                   </motion.div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">Recruiter Agent</p>
-                    <p className="text-xs text-muted/70">Representing Stripe</p>
-                  </div>
-                </div>
+                )}
 
-                <div className="space-y-3 min-h-[200px]">
-                  {recruiterMessages.slice(0, recruiterRound).map((msg, i) => (
-                    <AgentMessage key={i} text={msg.text} role="recruiter" delay={0} />
-                  ))}
-                  {recruiterTyping && <TypingIndicator side="right" />}
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 1.8, duration: 0.5 }}
-                className="space-y-4 bg-background/50 p-5"
-              >
-                <h4 className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">Fit Score</h4>
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: showScore ? 1 : 0 }}
-                  transition={{ duration: 0.5, type: "spring", stiffness: 180, damping: 12 }}
-                  className="flex flex-col items-center"
-                >
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: showScore ? 1 : 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-3xl font-bold text-gradient"
+                {/* Successful Booked Badge */}
+                {step >= 11 && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex justify-center py-2"
                   >
-                    92%
-                  </motion.span>
-                  <span className="text-xs text-muted/70 mt-0.5">Strong match</span>
-                  <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-card-border/60">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: showScore ? "92%" : "0%" }}
-                      transition={{ duration: 1.2, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-                      className="h-full rounded-full bg-gradient-to-r from-accent to-accent-gradient"
+                    <div className="flex items-center gap-2 rounded-2xl bg-emerald-50 border border-emerald-200 px-5 py-3 shadow-sm text-emerald-800">
+                      <div className="h-6 w-6 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold">✓</div>
+                      <div>
+                        <p className="text-xs font-bold">Meeting Booked Successfully</p>
+                        <p className="text-[10px] text-emerald-600">Tuesday, 10:00 AM EST (30m, Zoom)</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            </div>
+
+            {/* Column 4 & 5: Fit Score & Align Check */}
+            <div className="md:col-span-1 p-5 flex flex-col justify-between bg-subtle/15">
+              {/* Radial Fit Score Card */}
+              <div className="space-y-4 text-center">
+                <h4 className="text-[10px] font-bold text-muted uppercase tracking-wider">Alignment Score</h4>
+                
+                <div className="relative inline-flex items-center justify-center">
+                  {/* SVG Dash Indicator */}
+                  <svg className="w-24 h-24 transform -rotate-90">
+                    <circle cx="48" cy="48" r="40" stroke="#f3f4f6" strokeWidth="6" fill="transparent" />
+                    <circle 
+                      cx="48" 
+                      cy="48" 
+                      r="40" 
+                      stroke="url(#accent-grad)" 
+                      strokeWidth="6" 
+                      fill="transparent" 
+                      strokeDasharray="251.2"
+                      strokeDashoffset={251.2 - (251.2 * fitScore) / 100}
+                      className="transition-all duration-1000 ease-out"
                     />
-                  </div>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: showScore ? 1 : 0, y: showScore ? 0 : 10 }}
-                  transition={{ delay: 0.8 }}
-                  className="space-y-2"
-                >
-                  <div className="flex items-center gap-2 text-xs">
-                    <svg className="h-3.5 w-3.5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                    </svg>
-                    <span className="text-muted/80">Dealbreakers cleared</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <svg className="h-3.5 w-3.5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                    </svg>
-                    <span className="text-muted/80">Skills verified</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs">
-                    <svg className="h-3.5 w-3.5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                    </svg>
-                    <span className="text-muted/80">Salary aligned</span>
-                  </div>
-                </motion.div>
-              </motion.div>
+                    <defs>
+                      <linearGradient id="accent-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#266df0" />
+                        <stop offset="100%" stopColor="#0ea5e9" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <span className="absolute text-xl font-bold text-foreground tracking-tight">{fitScore}%</span>
+                </div>
+              </div>
+
+              {/* Alignment Checklist */}
+              <div className="space-y-3 mt-4">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-foreground/80">GitHub verification</span>
+                  {getChecklistStatus("git") === "aligned" ? (
+                    <span className="text-emerald-500 font-bold">✓</span>
+                  ) : (
+                    <span className="text-accent animate-pulse-subtle font-medium text-[9px]">checking</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-foreground/80">Compensation match</span>
+                  {getChecklistStatus("salary") === "aligned" ? (
+                    <span className="text-emerald-500 font-bold">✓</span>
+                  ) : getChecklistStatus("salary") === "checking" ? (
+                    <span className="text-accent animate-pulse-subtle font-medium text-[9px]">checking</span>
+                  ) : (
+                    <span className="text-muted/40 font-bold">•</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-foreground/80">Location/Remote</span>
+                  {getChecklistStatus("location") === "aligned" ? (
+                    <span className="text-emerald-500 font-bold">✓</span>
+                  ) : getChecklistStatus("location") === "checking" ? (
+                    <span className="text-accent animate-pulse-subtle font-medium text-[9px]">checking</span>
+                  ) : (
+                    <span className="text-muted/40 font-bold">•</span>
+                  )}
+                </div>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-foreground/80">Calendar alignment</span>
+                  {getChecklistStatus("calendar") === "aligned" ? (
+                    <span className="text-emerald-500 font-bold">✓</span>
+                  ) : getChecklistStatus("calendar") === "checking" ? (
+                    <span className="text-accent animate-pulse-subtle font-medium text-[9px]">checking</span>
+                  ) : (
+                    <span className="text-muted/40 font-bold">•</span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </motion.div>
