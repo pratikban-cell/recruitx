@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useRef } from "react";
@@ -88,62 +88,62 @@ export default function Hero() {
       while (active) {
         // Step 0: Stripe Agent typing
         setStep(0);
-        await new Promise((r) => setTimeout(r, 1500));
+        await new Promise((r) => setTimeout(r, 700));
         if (!active) break;
 
         // Step 1: Stripe Agent message 1
         setStep(1);
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 1000));
         if (!active) break;
 
         // Step 2: Ava typing
         setStep(2);
-        await new Promise((r) => setTimeout(r, 1500));
+        await new Promise((r) => setTimeout(r, 700));
         if (!active) break;
 
         // Step 3: Ava message 1
         setStep(3);
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 1000));
         if (!active) break;
 
         // Step 4: Stripe Agent typing 2
         setStep(4);
-        await new Promise((r) => setTimeout(r, 1500));
+        await new Promise((r) => setTimeout(r, 700));
         if (!active) break;
 
         // Step 5: Stripe Agent message 2
         setStep(5);
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 1000));
         if (!active) break;
 
         // Step 6: Ava typing 2
         setStep(6);
-        await new Promise((r) => setTimeout(r, 1500));
+        await new Promise((r) => setTimeout(r, 700));
         if (!active) break;
 
         // Step 7: Ava message 2
         setStep(7);
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 1000));
         if (!active) break;
 
         // Step 8: Stripe Agent typing 3
         setStep(8);
-        await new Promise((r) => setTimeout(r, 1500));
+        await new Promise((r) => setTimeout(r, 700));
         if (!active) break;
 
         // Step 9: Stripe Agent message 3
         setStep(9);
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 1000));
         if (!active) break;
 
         // Step 10: Ava message 3 (Booked)
         setStep(10);
-        await new Promise((r) => setTimeout(r, 1500));
+        await new Promise((r) => setTimeout(r, 700));
         if (!active) break;
 
         // Step 11: Final booked state
         setStep(11);
-        await new Promise((r) => setTimeout(r, 8000)); // Hold completed state for 8s
+        await new Promise((r) => setTimeout(r, 4000)); // Hold completed state for 4s
       }
     };
 
