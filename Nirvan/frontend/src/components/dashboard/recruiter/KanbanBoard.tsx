@@ -46,7 +46,7 @@ export default function KanbanBoard({
     activeRealCards.forEach(card => {
       try {
         const protocol = window.location.protocol === "https:" ? "wss" : "ws";
-        const apiHost = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000")
+        const apiHost = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000")
           .replace(/^https?:\/\//, "");
         const wsUrl = `${protocol}://${apiHost}/ws/negotiation/${card.id}`;
         
