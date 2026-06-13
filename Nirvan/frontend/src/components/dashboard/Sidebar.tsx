@@ -39,7 +39,7 @@ export default function Sidebar({ isRecruiter, userName, onLogout }: SidebarProp
   const items = isRecruiter ? recruiterNavItems : navItems;
 
   return (
-    <aside className="fixed left-6 top-1/2 -translate-y-1/2 z-35 flex flex-col items-center gap-4 bg-transparent select-none">
+    <aside className="fixed left-6 top-1/2 -translate-y-1/2 z-35 flex flex-col items-center gap-4 bg-transparent select-none sidebar-responsive">
       {/* Account Profile circle button */}
       <div className="relative mb-2">
         <button
