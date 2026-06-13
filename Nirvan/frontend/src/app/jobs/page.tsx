@@ -83,32 +83,34 @@ export default function JobBoard() {
 
   const jobBoardContent = (
     <>
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mb-8">
-        <div className="relative flex-1">
-          <svg className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-          </svg>
-          <input
-            type="text" value={search} onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by title, company, or tech stack..."
-            className="w-full rounded-lg border border-card-border bg-white pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted/60 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-          />
+      <div className="max-w-3xl mx-auto mb-8 space-y-6">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div className="relative flex-1">
+            <svg className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+            </svg>
+            <input
+              type="text" value={search} onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by title, company, or tech stack..."
+              className="w-full rounded-lg border border-card-border bg-white pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted/60 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            {["all", "remote", "hybrid", "onsite"].map((r) => (
+              <button key={r} onClick={() => setRemoteFilter(r)}
+                className={`rounded-lg border px-3.5 py-2 text-xs font-medium transition-all capitalize ${remoteFilter === r ? "border-accent bg-accent/5 text-accent" : "border-card-border text-muted hover:border-accent/30"}`}
+              >{r}</button>
+            ))}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          {["all", "remote", "hybrid", "onsite"].map((r) => (
-            <button key={r} onClick={() => setRemoteFilter(r)}
-              className={`rounded-lg border px-3.5 py-2 text-xs font-medium transition-all capitalize ${remoteFilter === r ? "border-accent bg-accent/5 text-accent" : "border-card-border text-muted hover:border-accent/30"}`}
-            >{r}</button>
+
+        <div className="flex gap-2 flex-wrap justify-center">
+          {stackTags.map((tag) => (
+            <button key={tag} onClick={() => setSearch(tag)}
+              className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${search === tag ? "bg-accent text-white" : "bg-white border border-card-border text-muted hover:border-accent/30"}`}
+            >{tag}</button>
           ))}
         </div>
-      </div>
-
-      <div className="flex gap-2 flex-wrap mb-8">
-        {stackTags.map((tag) => (
-          <button key={tag} onClick={() => setSearch(tag)}
-            className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${search === tag ? "bg-accent text-white" : "bg-white border border-card-border text-muted hover:border-accent/30"}`}
-          >{tag}</button>
-        ))}
       </div>
 
       {!user && !authLoading && (
@@ -149,11 +151,15 @@ export default function JobBoard() {
   if (user) {
     const isRecruiter = profile?.role === "recruiter";
     return (
-      <div className="min-h-screen bg-subtle">
+      <div className="min-h-screen bg-subtle relative pt-16">
         <Sidebar isRecruiter={isRecruiter} userName={profile?.name} onLogout={handleLogout} />
-        <div className="pl-64">
+        <div className="pl-32">
           <TopBar title="Job Board" />
-          <main className="p-8">{jobBoardContent}</main>
+          <main className="p-8">
+            <div className="max-w-6xl mx-auto">
+              {jobBoardContent}
+            </div>
+          </main>
         </div>
       </div>
     );
@@ -163,11 +169,8 @@ export default function JobBoard() {
     <div className="min-h-screen bg-subtle">
       <nav className="border-b border-card-border bg-white/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-accent to-accent-gradient shadow-sm">
-              <span className="text-sm font-bold text-white">A</span>
-            </div>
-            <span className="text-lg font-semibold text-foreground">Nirvan</span>
+          <Link href="/" className="flex items-center gap-2 group">
+            <img src="/recruit.png" alt="recruitx" className="h-8 w-auto object-contain" />
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/auth" className="text-sm text-muted hover:text-foreground transition-colors">Sign in</Link>

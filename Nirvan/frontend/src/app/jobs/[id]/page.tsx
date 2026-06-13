@@ -19,6 +19,7 @@ export default function JobDetail() {
   const params = useParams();
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [candidateId, setCandidateId] = useState<string | null>(null);
   const [dbJob, setDbJob] = useState<DbJob | null>(null);
   const [existingNegotiationId, setExistingNegotiationId] = useState<string | null>(null);
@@ -35,6 +36,14 @@ export default function JobDetail() {
       setUser(user);
       let candId = null;
       if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .single();
+        if (profile) {
+          setUserRole(profile.role);
+        }
         const { data: cand } = await supabase.from("candidates").select("id").eq("profile_id", user.id).single();
         if (cand) {
           setCandidateId(cand.id);
@@ -125,9 +134,9 @@ export default function JobDetail() {
         <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-accent to-accent-gradient shadow-sm">
-              <span className="text-sm font-bold text-white">A</span>
+              <span className="text-sm font-bold text-white">H</span>
             </div>
-            <span className="text-lg font-semibold text-foreground">Nirvan</span>
+            <span className="text-lg font-semibold text-foreground">recruitx</span>
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/jobs" className="text-sm text-muted hover:text-foreground transition-colors">&larr; All jobs</Link>
@@ -211,7 +220,7 @@ export default function JobDetail() {
           <div className="border-t border-card-border bg-subtle/50 px-8 py-5">
             <div className="flex items-center justify-between">
                 <p className="text-xs text-muted">Posted {job.created_at ? new Date(job.created_at).toLocaleDateString() : "recently"} · Agent-ready</p>
-              {user ? (
+              {user && userRole === "candidate" ? (
                 (() => {
                   let btnText = "Let agent handle this";
                   let btnClass = "bg-accent hover:bg-accent/90 text-white";
@@ -240,6 +249,10 @@ export default function JobDetail() {
                     </button>
                   );
                 })()
+              ) : user && userRole === "recruiter" ? (
+                <Link href="/dashboard/recruiter/jobs" className="rounded-lg bg-foreground px-6 py-2.5 text-sm font-semibold text-white hover:bg-foreground/90 transition-all shadow-sm">
+                  Manage Jobs in Dashboard
+                </Link>
               ) : (
                 <Link href="/auth" className="rounded-lg bg-foreground px-6 py-2.5 text-sm font-semibold text-white hover:bg-foreground/90 transition-all shadow-sm">
                   Sign up — let your agent apply
