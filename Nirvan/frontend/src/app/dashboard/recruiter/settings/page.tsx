@@ -121,7 +121,7 @@ export default function RecruiterSettings() {
   if (loading) return <div className="flex items-center justify-center min-h-[60vh]"><div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" /></div>;
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl mx-auto">
       <form onSubmit={handleSave} className="space-y-6">
         <div className="rounded-xl border border-card-border bg-white p-6 shadow-sm space-y-5">
           <h2 className="text-sm font-semibold text-foreground uppercase tracking-wider">Basic Info</h2>
