@@ -297,7 +297,7 @@ export default function NegotiationPage() {
               {otherParty.name}
               {isCandidate && (
                 <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] font-bold text-emerald-600 flex items-center gap-1 shadow-sm whitespace-nowrap">
-                  🛡️ PAN Verified ✓
+                  🛡️ KYC Verified ✓
                 </span>
               )}
             </h1>

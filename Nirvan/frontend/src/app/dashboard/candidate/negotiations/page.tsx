@@ -116,7 +116,7 @@ export default function CandidateNegotiations() {
                       <h3 className="font-semibold text-foreground group-hover:text-accent transition-colors flex items-center gap-1.5">
                         {recruiter?.company || "Unknown"}
                         <span className="rounded bg-emerald-50 border border-emerald-200 px-1.5 py-0.25 text-[8px] font-bold text-emerald-600 flex items-center gap-0.5 tracking-normal whitespace-nowrap">
-                          🛡️ PAN Verified ✓
+                          🛡️ KYC Verified ✓
                         </span>
                       </h3>
                       <p className="text-xs text-muted">{recruiter?.position || "Position"}</p>

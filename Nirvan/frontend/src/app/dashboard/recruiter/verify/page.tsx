@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export default function CompanyVerifyPage() {
   const router = useRouter();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1); // 1: Form, 2: Loading, 3: Success, 4: Failure
-  const [panNumber, setPanNumber] = useState("");
+  const [kycNumber, setKycNumber] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -17,7 +17,7 @@ export default function CompanyVerifyPage() {
     ird: "Pending ⏳",
     cert: "Pending ⏳",
   });
-  const [panVerified, setPanVerified] = useState(false);
+  const [kycVerified, setKycVerified] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -33,7 +33,7 @@ export default function CompanyVerifyPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!panNumber || !companyName || !file) return;
+    if (!kycNumber || !companyName || !file) return;
     setStep(2);
   };
 
@@ -59,7 +59,7 @@ export default function CompanyVerifyPage() {
       const t4 = setTimeout(() => {
         if (simulateSuccess) {
           setStep(3);
-          setPanVerified(true);
+          setKycVerified(true);
         } else {
           setStep(4);
         }
@@ -85,8 +85,8 @@ export default function CompanyVerifyPage() {
 
   // Trust score calculations
   const baseTrustScore = 15; // Domain Email Verified (+15)
-  const panScore = panVerified ? 30 : 0;
-  const totalTrustScore = baseTrustScore + panScore;
+  const kycScore = kycVerified ? 30 : 0;
+  const totalTrustScore = baseTrustScore + kycScore;
   let trustLevel = "Basic";
   let trustBadgeColor = "bg-slate-100 text-slate-700 border-slate-200";
 
@@ -105,7 +105,7 @@ export default function CompanyVerifyPage() {
           </span>
         </h1>
         <p className="text-sm text-muted">
-          Verify your company business identity using Nepalese PAN certificate credentials to unlock talent marketplace matches.
+          Verify your company business identity using Nepalese KYC certificate credentials to unlock talent marketplace matches.
         </p>
       </div>
 
@@ -136,19 +136,19 @@ export default function CompanyVerifyPage() {
                   className="space-y-6"
                 >
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* PAN Input */}
+                    {/* KYC Input */}
                     <div className="space-y-1.5">
-                      <label className="text-xs font-extrabold text-slate-600 uppercase tracking-wider block">Company PAN Number</label>
+                      <label className="text-xs font-extrabold text-slate-600 uppercase tracking-wider block">Company KYC Number</label>
                       <input
                         type="text"
                         required
                         maxLength={9}
-                        value={panNumber}
+                        value={kycNumber}
                         onChange={(e) => {
                           const val = e.target.value.replace(/\D/g, "");
-                          setPanNumber(val);
+                          setKycNumber(val);
                         }}
-                        placeholder="Enter your 9-digit PAN number"
+                        placeholder="Enter your 9-digit KYC number"
                         className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:outline-none focus:border-accent"
                       />
                       <span className="text-[10px] text-muted block leading-normal">
@@ -164,7 +164,7 @@ export default function CompanyVerifyPage() {
                         required
                         value={companyName}
                         onChange={(e) => setCompanyName(e.target.value)}
-                        placeholder="As it appears on your PAN certificate"
+                        placeholder="As it appears on your KYC certificate"
                         className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:outline-none focus:border-accent"
                       />
                       <span className="text-[10px] text-muted block leading-normal">
@@ -175,7 +175,7 @@ export default function CompanyVerifyPage() {
 
                   {/* Drag and Drop File Upload Area */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-extrabold text-slate-600 uppercase tracking-wider block">Upload PAN Certificate</label>
+                    <label className="text-xs font-extrabold text-slate-600 uppercase tracking-wider block">Upload KYC Certificate</label>
                     <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 hover:border-accent/40 hover:bg-slate-50/50 transition-all text-center relative cursor-pointer">
                       <input
                         type="file"
@@ -192,7 +192,7 @@ export default function CompanyVerifyPage() {
                               PDF
                             </div>
                           ) : (
-                            <img src={filePreview || ""} alt="PAN Preview" className="mx-auto h-24 object-contain rounded-lg border border-slate-200" />
+                            <img src={filePreview || ""} alt="KYC Preview" className="mx-auto h-24 object-contain rounded-lg border border-slate-200" />
                           )}
                           <div className="text-xs font-semibold text-slate-700">{file.name}</div>
                           <span className="text-[10px] text-muted block">{(file.size / (1024 * 1024)).toFixed(2)} MB • Click to replace file</span>
@@ -200,7 +200,7 @@ export default function CompanyVerifyPage() {
                       ) : (
                         <div className="space-y-2">
                           <span className="text-2xl block">📄</span>
-                          <p className="text-xs font-semibold text-slate-700">Drag and drop PAN Certificate file or browse</p>
+                          <p className="text-xs font-semibold text-slate-700">Drag and drop KYC Certificate file or browse</p>
                           <p className="text-[10px] text-slate-400">Accepts PDF, JPG, PNG up to 5MB</p>
                         </div>
                       )}
@@ -251,7 +251,7 @@ export default function CompanyVerifyPage() {
 
                   <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 divide-y divide-slate-100 text-left text-xs font-medium space-y-3">
                     <div className="flex justify-between items-center pb-2.5">
-                      <span className="text-slate-500">Checking PAN number format...</span>
+                      <span className="text-slate-500">Checking KYC number format...</span>
                       <span className={`font-bold ${progressText.format.includes("✓") ? "text-emerald-600" : "text-amber-500"}`}>{progressText.format}</span>
                     </div>
                     <div className="flex justify-between items-center py-2.5">
@@ -290,11 +290,11 @@ export default function CompanyVerifyPage() {
                     </div>
                     <div>
                       <span className="text-[10px] text-emerald-600 font-extrabold uppercase tracking-wider block">Tax Identification No</span>
-                      <span className="font-semibold text-slate-700 block">PAN: {panNumber}</span>
+                      <span className="font-semibold text-slate-700 block">KYC: {kycNumber}</span>
                     </div>
                     <div className="flex items-center gap-1.5 pt-1.5 border-t border-emerald-100/50 mt-1.5">
                       <span className="text-emerald-600 font-bold border border-emerald-200 bg-emerald-50 px-2 py-0.5 rounded-full text-[9px] uppercase tracking-wider flex items-center gap-1">
-                        🛡️ PAN Verified ✓
+                        🛡️ KYC Verified ✓
                       </span>
                     </div>
                   </div>
@@ -325,14 +325,14 @@ export default function CompanyVerifyPage() {
 
                   <div className="space-y-1.5">
                     <h3 className="font-bold text-slate-800 text-base">Verification Failed</h3>
-                    <p className="text-xs text-muted">The PAN certificate does not match registered database parameters.</p>
+                    <p className="text-xs text-muted">The KYC certificate does not match registered database parameters.</p>
                   </div>
 
                   <div className="rounded-xl border border-slate-100 bg-slate-50/50 p-4 text-left text-xs space-y-2">
                     <span className="font-bold text-slate-700 block">Common reasons:</span>
                     <ul className="list-disc pl-4 space-y-1 text-slate-500 leading-normal">
-                      <li>Typed PAN number does not match image certificate.</li>
-                      <li>Incomplete/cut off PAN certificate scan upload.</li>
+                      <li>Typed KYC number does not match image certificate.</li>
+                      <li>Incomplete/cut off KYC certificate scan upload.</li>
                       <li>Inland Revenue Department registry mismatch.</li>
                     </ul>
                   </div>
@@ -397,15 +397,15 @@ export default function CompanyVerifyPage() {
               {/* Factor 2 */}
               <div className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span className={`font-medium flex items-center gap-1.5 ${panVerified ? "text-slate-600" : "text-slate-400"}`}>
-                    {panVerified ? "✓ PAN Verified" : "⏳ PAN Verification"}
+                  <span className={`font-medium flex items-center gap-1.5 ${kycVerified ? "text-slate-600" : "text-slate-400"}`}>
+                    {kycVerified ? "✓ KYC Verified" : "⏳ KYC Verification"}
                   </span>
-                  <span className={`font-bold text-[10px] ${panVerified ? "text-slate-700" : "text-slate-400"}`}>
-                    {panVerified ? "+30" : "+0"}
+                  <span className={`font-bold text-[10px] ${kycVerified ? "text-slate-700" : "text-slate-400"}`}>
+                    {kycVerified ? "+30" : "+0"}
                   </span>
                 </div>
                 <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                  <div className={`h-full bg-blue-500 rounded-full transition-all duration-500 ${panVerified ? "w-[100%]" : "w-0"}`} />
+                  <div className={`h-full bg-blue-500 rounded-full transition-all duration-500 ${kycVerified ? "w-[100%]" : "w-0"}`} />
                 </div>
               </div>
 
