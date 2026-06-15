@@ -5,6 +5,8 @@
 recruitx is a full-stack platform where AI agents negotiate job offers autonomously — no cover letters, no back-and-forth emails. A candidate's AI agent talks directly to a recruiter's AI agent, aligns on salary, remote policy, and culture fit, then schedules the interview — all without human intervention.
 
 ---
+## DEMO
+| Link : https://devfolio.co/projects/recruitx-9bcf |
 
 ## 🚀 What We Built
 
